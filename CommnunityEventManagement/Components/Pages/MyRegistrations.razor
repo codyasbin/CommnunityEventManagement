@@ -6,6 +6,7 @@
 @inject IRegistrationService RegistrationService
 @inject AuthenticationStateProvider AuthStateProvider
 @inject NavigationManager NavigationManager
+@rendermode InteractiveServer
 
 <PageTitle>My Registrations - CEMS</PageTitle>
 
@@ -47,7 +48,6 @@
     }
     else
     {
-        <!-- Upcoming Registrations -->
         @{
             var upcomingRegs = registrations.Where(r => r.Event.EventDate >= DateTime.UtcNow.Date && r.Status == RegistrationStatus.Confirmed).ToList();
             var pastRegs = registrations.Where(r => r.Event.EventDate < DateTime.UtcNow.Date || r.Status != RegistrationStatus.Confirmed).ToList();
