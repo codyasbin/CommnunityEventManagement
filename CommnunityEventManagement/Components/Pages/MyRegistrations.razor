@@ -1,0 +1,244 @@
+@page "/my-registrations"
+@using CommnunityEventManagement.Data.Models
+@using CommnunityEventManagement.Services
+@using Microsoft.AspNetCore.Authorization
+@attribute [Authorize]
+@inject IRegistrationService RegistrationService
+@inject AuthenticationStateProvider AuthStateProvider
+@inject NavigationManager NavigationManager
+
+<PageTitle>My Registrations - CEMS</PageTitle>
+
+<div class="container py-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h1 class="fw-bold mb-1">?? My Registrations</h1>
+            <p class="text-muted mb-0">View and manage your event registrations</p>
+        </div>
+        <a href="events" class="btn btn-primary">
+            Browse Events
+        </a>
+    </div>
+
+    @if (!string.IsNullOrEmpty(message))
+    {
+        <div class="alert @(isSuccess ? "alert-success" : "alert-danger") alert-dismissible fade show">
+            @message
+            <button type="button" class="btn-close" @onclick="() => message = null"></button>
+        </div>
+    }
+
+    @if (isLoading)
+    {
+        <div class="loading-spinner">
+            <div class="spinner-border" role="status">
+                <span class="visually-hidden">Loading...</span>
+            </div>
+        </div>
+    }
+    else if (!registrations.Any())
+    {
+        <div class="empty-state">
+            <div style="font-size: 4rem;">??</div>
+            <h3>No Registrations Yet</h3>
+            <p>You haven't registered for any events. Start exploring!</p>
+            <a href="events" class="btn btn-primary">Browse Events</a>
+        </div>
+    }
+    else
+    {
+        <!-- Upcoming Registrations -->
+        @{
+            var upcomingRegs = registrations.Where(r => r.Event.EventDate >= DateTime.UtcNow.Date && r.Status == RegistrationStatus.Confirmed).ToList();
+            var pastRegs = registrations.Where(r => r.Event.EventDate < DateTime.UtcNow.Date || r.Status != RegistrationStatus.Confirmed).ToList();
+        }
+
+        @if (upcomingRegs.Any())
+        {
+            <h4 class="fw-bold mb-3">?? Upcoming Events</h4>
+            <div class="row g-4 mb-5">
+                @foreach (var reg in upcomingRegs)
+                {
+                    <div class="col-md-6 col-lg-4">
+                        <div class="card h-100">
+                            <div class="card-body">
+                                <div class="d-flex justify-content-between align-items-start mb-2">
+                                    <h5 class="card-title fw-bold mb-0">@reg.Event.Name</h5>
+                                    <span class="badge badge-confirmed">Confirmed</span>
+                                </div>
+                                
+                                <div class="text-muted small mb-3">
+                                    <div class="mb-1">
+                                        <span>??</span> @reg.Event.EventDate.ToString("dddd, MMM dd, yyyy")
+                                    </div>
+                                    <div class="mb-1">
+                                        <span>??</span> @reg.Event.StartTime.ToString(@"hh\:mm")
+                                    </div>
+                                    <div>
+                                        <span>??</span> @reg.Event.Venue?.Name
+                                    </div>
+                                </div>
+
+                                <div class="d-flex flex-wrap gap-1 mb-3">
+                                    @foreach (var ea in reg.Event.EventActivities.Take(2))
+                                    {
+                                        <span class="activity-tag">@ea.Activity?.Name</span>
+                                    }
+                                </div>
+
+                                <div class="d-flex gap-2">
+                                    <a href="events/@reg.EventId" class="btn btn-outline-primary btn-sm flex-grow-1">
+                                        View Event
+                                    </a>
+                                    <button class="btn btn-outline-danger btn-sm" 
+                                            @onclick="() => ShowCancelConfirmation(reg)"
+                                            disabled="@isCancelling">
+                                        Cancel
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="card-footer bg-transparent text-muted small">
+                                Registered on @reg.RegistrationDate.ToString("MMM dd, yyyy")
+                            </div>
+                        </div>
+                    </div>
+                }
+            </div>
+        }
+
+        @if (pastRegs.Any())
+        {
+            <h4 class="fw-bold mb-3">?? Past & Cancelled</h4>
+            <div class="table-responsive">
+                <table class="table table-hover bg-white rounded">
+                    <thead>
+                        <tr>
+                            <th>Event</th>
+                            <th>Date</th>
+                            <th>Venue</th>
+                            <th>Status</th>
+                            <th>Registered On</th>
+                            <th></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var reg in pastRegs)
+                        {
+                            <tr>
+                                <td class="fw-medium">@reg.Event.Name</td>
+                                <td>@reg.Event.EventDate.ToString("MMM dd, yyyy")</td>
+                                <td>@reg.Event.Venue?.Name</td>
+                                <td>
+                                    <span class="badge badge-@reg.Status.ToString().ToLower()">@reg.Status</span>
+                                </td>
+                                <td>@reg.RegistrationDate.ToString("MMM dd, yyyy")</td>
+                                <td>
+                                    <a href="events/@reg.EventId" class="btn btn-sm btn-outline-primary">View</a>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        }
+    }
+</div>
+
+<!-- Cancel Confirmation Modal -->
+@if (registrationToCancel != null)
+{
+    <div class="modal fade show d-block" tabindex="-1" style="background-color: rgba(0,0,0,0.5);">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Cancel Registration</h5>
+                    <button type="button" class="btn-close" @onclick="() => registrationToCancel = null"></button>
+                </div>
+                <div class="modal-body">
+                    <p>Are you sure you want to cancel your registration for:</p>
+                    <p class="fw-bold">@registrationToCancel.Event.Name</p>
+                    <p class="text-muted">@registrationToCancel.Event.EventDate.ToString("MMMM dd, yyyy")</p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" @onclick="() => registrationToCancel = null">
+                        Keep Registration
+                    </button>
+                    <button type="button" class="btn btn-danger" @onclick="CancelRegistration" disabled="@isCancelling">
+                        @if (isCancelling)
+                        {
+                            <span class="spinner-border spinner-border-sm me-2"></span>
+                        }
+                        Cancel Registration
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+@code {
+    private List<Registration> registrations = new();
+    private bool isLoading = true;
+    private string? currentUserId;
+    private string? message;
+    private bool isSuccess = false;
+    private Registration? registrationToCancel;
+    private bool isCancelling = false;
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            var authState = await AuthStateProvider.GetAuthenticationStateAsync();
+            currentUserId = authState.User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+            
+            if (!string.IsNullOrEmpty(currentUserId))
+            {
+                registrations = await RegistrationService.GetUserRegistrationsAsync(currentUserId);
+            }
+        }
+        finally
+        {
+            isLoading = false;
+        }
+    }
+
+    private void ShowCancelConfirmation(Registration registration)
+    {
+        registrationToCancel = registration;
+    }
+
+    private async Task CancelRegistration()
+    {
+        if (registrationToCancel == null || string.IsNullOrEmpty(currentUserId))
+            return;
+
+        isCancelling = true;
+
+        try
+        {
+            var result = await RegistrationService.CancelRegistrationAsync(registrationToCancel.Id, currentUserId);
+            if (result)
+            {
+                isSuccess = true;
+                message = "Registration cancelled successfully.";
+                registrations = await RegistrationService.GetUserRegistrationsAsync(currentUserId);
+            }
+            else
+            {
+                isSuccess = false;
+                message = "Failed to cancel registration.";
+            }
+        }
+        catch (Exception ex)
+        {
+            isSuccess = false;
+            message = ex.Message;
+        }
+        finally
+        {
+            isCancelling = false;
+            registrationToCancel = null;
+        }
+    }
+}
