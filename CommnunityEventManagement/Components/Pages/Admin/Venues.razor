@@ -1,0 +1,289 @@
+@page "/admin/venues"
+@using CommnunityEventManagement.Data.Models
+@using CommnunityEventManagement.Services
+@using Microsoft.AspNetCore.Authorization
+@attribute [Authorize(Roles = "Admin")]
+@inject IVenueService VenueService
+@rendermode InteractiveServer
+
+<PageTitle>Manage Venues - CEMS Admin</PageTitle>
+
+<div class="container py-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h1 class="fw-bold mb-1">??? Manage Venues</h1>
+            <p class="text-muted mb-0">Create and manage event venues</p>
+        </div>
+        <button class="btn btn-primary" @onclick="ShowCreateModal">
+            + Add Venue
+        </button>
+    </div>
+
+    @if (!string.IsNullOrEmpty(message))
+    {
+        <div class="alert @(isSuccess ? "alert-success" : "alert-danger") alert-dismissible fade show">
+            @message
+            <button type="button" class="btn-close" @onclick="() => message = null"></button>
+        </div>
+    }
+
+    @if (isLoading)
+    {
+        <div class="loading-spinner">
+            <div class="spinner-border" role="status">
+                <span class="visually-hidden">Loading...</span>
+            </div>
+        </div>
+    }
+    else if (!venues.Any())
+    {
+        <div class="empty-state">
+            <div style="font-size: 4rem;">???</div>
+            <h3>No Venues Yet</h3>
+            <p>Create your first venue to get started.</p>
+            <button class="btn btn-primary" @onclick="ShowCreateModal">Add Venue</button>
+        </div>
+    }
+    else
+    {
+        <div class="table-responsive">
+            <table class="table table-hover bg-white rounded shadow-sm">
+                <thead>
+                    <tr>
+                        <th>Name</th>
+                        <th>Address</th>
+                        <th>Max Capacity</th>
+                        <th>Events</th>
+                        <th>Created</th>
+                        <th class="text-end">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var venue in venues)
+                    {
+                        <tr>
+                            <td class="fw-medium">@venue.Name</td>
+                            <td>@venue.Address</td>
+                            <td>@venue.MaxCapacity</td>
+                            <td>@venue.Events.Count</td>
+                            <td>@venue.CreatedAt.ToString("MMM dd, yyyy")</td>
+                            <td class="text-end">
+                                <button class="btn btn-sm btn-outline-primary me-1" @onclick="() => ShowEditModal(venue)">
+                                    Edit
+                                </button>
+                                <button class="btn btn-sm btn-outline-danger" @onclick="() => ShowDeleteConfirmation(venue)" 
+                                        disabled="@(venue.Events.Any())">
+                                    Delete
+                                </button>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    }
+</div>
+
+<!-- Create/Edit Modal -->
+@if (showModal)
+{
+    <div class="modal fade show d-block" tabindex="-1" style="background-color: rgba(0,0,0,0.5);">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">@(isEditing ? "Edit Venue" : "Create Venue")</h5>
+                    <button type="button" class="btn-close" @onclick="CloseModal"></button>
+                </div>
+                <EditForm Model="currentVenue" OnValidSubmit="SaveVenue">
+                    <DataAnnotationsValidator />
+                    <div class="modal-body">
+                        <div class="mb-3">
+                            <label class="form-label">Name *</label>
+                            <InputText class="form-control" @bind-Value="currentVenue.Name" />
+                            <ValidationMessage For="@(() => currentVenue.Name)" class="text-danger" />
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Address *</label>
+                            <InputTextArea class="form-control" @bind-Value="currentVenue.Address" rows="2" />
+                            <ValidationMessage For="@(() => currentVenue.Address)" class="text-danger" />
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Max Capacity *</label>
+                            <InputNumber class="form-control" @bind-Value="currentVenue.MaxCapacity" />
+                            <ValidationMessage For="@(() => currentVenue.MaxCapacity)" class="text-danger" />
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Description</label>
+                            <InputTextArea class="form-control" @bind-Value="currentVenue.Description" rows="3" />
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" @onclick="CloseModal">Cancel</button>
+                        <button type="submit" class="btn btn-primary" disabled="@isSaving">
+                            @if (isSaving)
+                            {
+                                <span class="spinner-border spinner-border-sm me-2"></span>
+                            }
+                            @(isEditing ? "Save Changes" : "Create Venue")
+                        </button>
+                    </div>
+                </EditForm>
+            </div>
+        </div>
+    </div>
+}
+
+<!-- Delete Confirmation Modal -->
+@if (venueToDelete != null)
+{
+    <div class="modal fade show d-block" tabindex="-1" style="background-color: rgba(0,0,0,0.5);">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Delete Venue</h5>
+                    <button type="button" class="btn-close" @onclick="() => venueToDelete = null"></button>
+                </div>
+                <div class="modal-body">
+                    <p>Are you sure you want to delete the venue:</p>
+                    <p class="fw-bold">@venueToDelete.Name</p>
+                    <p class="text-danger small">This action cannot be undone.</p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" @onclick="() => venueToDelete = null">Cancel</button>
+                    <button type="button" class="btn btn-danger" @onclick="DeleteVenue" disabled="@isDeleting">
+                        @if (isDeleting)
+                        {
+                            <span class="spinner-border spinner-border-sm me-2"></span>
+                        }
+                        Delete Venue
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+@code {
+    private List<Venue> venues = new();
+    private Venue currentVenue = new();
+    private Venue? venueToDelete;
+    private bool isLoading = true;
+    private bool showModal = false;
+    private bool isEditing = false;
+    private bool isSaving = false;
+    private bool isDeleting = false;
+    private string? message;
+    private bool isSuccess = false;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadVenues();
+    }
+
+    private async Task LoadVenues()
+    {
+        isLoading = true;
+        try
+        {
+            venues = await VenueService.GetAllAsync();
+            foreach (var venue in venues)
+            {
+                var fullVenue = await VenueService.GetByIdAsync(venue.Id);
+                if (fullVenue != null)
+                {
+                    venue.Events = fullVenue.Events;
+                }
+            }
+        }
+        finally
+        {
+            isLoading = false;
+        }
+    }
+
+    private void ShowCreateModal()
+    {
+        currentVenue = new Venue();
+        isEditing = false;
+        showModal = true;
+    }
+
+    private void ShowEditModal(Venue venue)
+    {
+        currentVenue = new Venue
+        {
+            Id = venue.Id,
+            Name = venue.Name,
+            Address = venue.Address,
+            MaxCapacity = venue.MaxCapacity,
+            Description = venue.Description
+        };
+        isEditing = true;
+        showModal = true;
+    }
+
+    private void CloseModal()
+    {
+        showModal = false;
+        currentVenue = new Venue();
+    }
+
+    private async Task SaveVenue()
+    {
+        isSaving = true;
+        try
+        {
+            if (isEditing)
+            {
+                await VenueService.UpdateAsync(currentVenue);
+                message = "Venue updated successfully.";
+            }
+            else
+            {
+                await VenueService.CreateAsync(currentVenue);
+                message = "Venue created successfully.";
+            }
+            isSuccess = true;
+            CloseModal();
+            await LoadVenues();
+        }
+        catch (Exception ex)
+        {
+            isSuccess = false;
+            message = ex.Message;
+        }
+        finally
+        {
+            isSaving = false;
+        }
+    }
+
+    private void ShowDeleteConfirmation(Venue venue)
+    {
+        venueToDelete = venue;
+    }
+
+    private async Task DeleteVenue()
+    {
+        if (venueToDelete == null) return;
+
+        isDeleting = true;
+        try
+        {
+            await VenueService.DeleteAsync(venueToDelete.Id);
+            isSuccess = true;
+            message = "Venue deleted successfully.";
+            venueToDelete = null;
+            await LoadVenues();
+        }
+        catch (Exception ex)
+        {
+            isSuccess = false;
+            message = ex.Message;
+        }
+        finally
+        {
+            isDeleting = false;
+        }
+    }
+}

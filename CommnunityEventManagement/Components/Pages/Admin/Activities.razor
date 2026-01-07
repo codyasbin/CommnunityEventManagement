@@ -1,0 +1,272 @@
+@page "/admin/activities"
+@using CommnunityEventManagement.Data.Models
+@using CommnunityEventManagement.Services
+@using Microsoft.AspNetCore.Authorization
+@attribute [Authorize(Roles = "Admin")]
+@inject IActivityService ActivityService
+@rendermode InteractiveServer
+
+<PageTitle>Manage Activities - CEMS Admin</PageTitle>
+
+<div class="container py-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h1 class="fw-bold mb-1">?? Manage Activities</h1>
+            <p class="text-muted mb-0">Create and manage event activities</p>
+        </div>
+        <button class="btn btn-primary" @onclick="ShowCreateModal">
+            + Add Activity
+        </button>
+    </div>
+
+    @if (!string.IsNullOrEmpty(message))
+    {
+        <div class="alert @(isSuccess ? "alert-success" : "alert-danger") alert-dismissible fade show">
+            @message
+            <button type="button" class="btn-close" @onclick="() => message = null"></button>
+        </div>
+    }
+
+    @if (isLoading)
+    {
+        <div class="loading-spinner">
+            <div class="spinner-border" role="status">
+                <span class="visually-hidden">Loading...</span>
+            </div>
+        </div>
+    }
+    else if (!activities.Any())
+    {
+        <div class="empty-state">
+            <div style="font-size: 4rem;">??</div>
+            <h3>No Activities Yet</h3>
+            <p>Create your first activity to get started.</p>
+            <button class="btn btn-primary" @onclick="ShowCreateModal">Add Activity</button>
+        </div>
+    }
+    else
+    {
+        <div class="row g-4">
+            @foreach (var activity in activities)
+            {
+                <div class="col-md-6 col-lg-4">
+                    <div class="card h-100">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between align-items-start mb-2">
+                                <h5 class="card-title fw-bold mb-0">@activity.Name</h5>
+                                @if (!string.IsNullOrEmpty(activity.Category))
+                                {
+                                    <span class="badge bg-secondary">@activity.Category</span>
+                                }
+                            </div>
+                            <p class="text-muted small mb-3">
+                                @(activity.Description ?? "No description")
+                            </p>
+                            <div class="text-muted small mb-3">
+                                Created: @activity.CreatedAt.ToString("MMM dd, yyyy")
+                            </div>
+                            <div class="d-flex gap-2">
+                                <button class="btn btn-outline-primary btn-sm flex-grow-1" @onclick="() => ShowEditModal(activity)">
+                                    Edit
+                                </button>
+                                <button class="btn btn-outline-danger btn-sm" @onclick="() => ShowDeleteConfirmation(activity)">
+                                    Delete
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    }
+</div>
+
+<!-- Create/Edit Modal -->
+@if (showModal)
+{
+    <div class="modal fade show d-block" tabindex="-1" style="background-color: rgba(0,0,0,0.5);">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">@(isEditing ? "Edit Activity" : "Create Activity")</h5>
+                    <button type="button" class="btn-close" @onclick="CloseModal"></button>
+                </div>
+                <EditForm Model="currentActivity" OnValidSubmit="SaveActivity">
+                    <DataAnnotationsValidator />
+                    <div class="modal-body">
+                        <div class="mb-3">
+                            <label class="form-label">Name *</label>
+                            <InputText class="form-control" @bind-Value="currentActivity.Name" />
+                            <ValidationMessage For="@(() => currentActivity.Name)" class="text-danger" />
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Category</label>
+                            <InputText class="form-control" @bind-Value="currentActivity.Category" 
+                                       placeholder="e.g., Sports, Music, Art" />
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Description</label>
+                            <InputTextArea class="form-control" @bind-Value="currentActivity.Description" rows="3" />
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" @onclick="CloseModal">Cancel</button>
+                        <button type="submit" class="btn btn-primary" disabled="@isSaving">
+                            @if (isSaving)
+                            {
+                                <span class="spinner-border spinner-border-sm me-2"></span>
+                            }
+                            @(isEditing ? "Save Changes" : "Create Activity")
+                        </button>
+                    </div>
+                </EditForm>
+            </div>
+        </div>
+    </div>
+}
+
+<!-- Delete Confirmation Modal -->
+@if (activityToDelete != null)
+{
+    <div class="modal fade show d-block" tabindex="-1" style="background-color: rgba(0,0,0,0.5);">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Delete Activity</h5>
+                    <button type="button" class="btn-close" @onclick="() => activityToDelete = null"></button>
+                </div>
+                <div class="modal-body">
+                    <p>Are you sure you want to delete the activity:</p>
+                    <p class="fw-bold">@activityToDelete.Name</p>
+                    <p class="text-danger small">This will also remove it from all associated events.</p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" @onclick="() => activityToDelete = null">Cancel</button>
+                    <button type="button" class="btn btn-danger" @onclick="DeleteActivity" disabled="@isDeleting">
+                        @if (isDeleting)
+                        {
+                            <span class="spinner-border spinner-border-sm me-2"></span>
+                        }
+                        Delete Activity
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+@code {
+    private List<Activity> activities = new();
+    private Activity currentActivity = new();
+    private Activity? activityToDelete;
+    private bool isLoading = true;
+    private bool showModal = false;
+    private bool isEditing = false;
+    private bool isSaving = false;
+    private bool isDeleting = false;
+    private string? message;
+    private bool isSuccess = false;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadActivities();
+    }
+
+    private async Task LoadActivities()
+    {
+        isLoading = true;
+        try
+        {
+            activities = await ActivityService.GetAllAsync();
+        }
+        finally
+        {
+            isLoading = false;
+        }
+    }
+
+    private void ShowCreateModal()
+    {
+        currentActivity = new Activity();
+        isEditing = false;
+        showModal = true;
+    }
+
+    private void ShowEditModal(Activity activity)
+    {
+        currentActivity = new Activity
+        {
+            Id = activity.Id,
+            Name = activity.Name,
+            Category = activity.Category,
+            Description = activity.Description
+        };
+        isEditing = true;
+        showModal = true;
+    }
+
+    private void CloseModal()
+    {
+        showModal = false;
+        currentActivity = new Activity();
+    }
+
+    private async Task SaveActivity()
+    {
+        isSaving = true;
+        try
+        {
+            if (isEditing)
+            {
+                await ActivityService.UpdateAsync(currentActivity);
+                message = "Activity updated successfully.";
+            }
+            else
+            {
+                await ActivityService.CreateAsync(currentActivity);
+                message = "Activity created successfully.";
+            }
+            isSuccess = true;
+            CloseModal();
+            await LoadActivities();
+        }
+        catch (Exception ex)
+        {
+            isSuccess = false;
+            message = ex.Message;
+        }
+        finally
+        {
+            isSaving = false;
+        }
+    }
+
+    private void ShowDeleteConfirmation(Activity activity)
+    {
+        activityToDelete = activity;
+    }
+
+    private async Task DeleteActivity()
+    {
+        if (activityToDelete == null) return;
+
+        isDeleting = true;
+        try
+        {
+            await ActivityService.DeleteAsync(activityToDelete.Id);
+            isSuccess = true;
+            message = "Activity deleted successfully.";
+            activityToDelete = null;
+            await LoadActivities();
+        }
+        catch (Exception ex)
+        {
+            isSuccess = false;
+            message = ex.Message;
+        }
+        finally
+        {
+            isDeleting = false;
+        }
+    }
+}
