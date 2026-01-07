@@ -2,69 +2,71 @@
 
 @inject NavigationManager NavigationManager
 
-<div class="top-row ps-3 navbar navbar-dark">
+<div class="top-row ps-3 navbar navbar-dark" style="background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);">
     <div class="container-fluid">
-        <a class="navbar-brand" href="">CommnunityEventManagement</a>
+        <a class="navbar-brand fw-bold" href="">
+            <span class="me-2">🎉</span> CEMS
+        </a>
     </div>
 </div>
 
 <input type="checkbox" title="Navigation menu" class="navbar-toggler" />
 
 <div class="nav-scrollable" onclick="document.querySelector('.navbar-toggler').click()">
-    <nav class="nav flex-column">
-        <div class="nav-item px-3">
-            <NavLink class="nav-link" href="" Match="NavLinkMatch.All">
+    <nav class="nav flex-column p-2">
+        <div class="nav-item px-2 py-1">
+            <NavLink class="nav-link rounded" href="" Match="NavLinkMatch.All">
                 <span class="bi bi-house-door-fill-nav-menu" aria-hidden="true"></span> Home
             </NavLink>
         </div>
 
-        <div class="nav-item px-3">
-            <NavLink class="nav-link" href="counter">
-                <span class="bi bi-plus-square-fill-nav-menu" aria-hidden="true"></span> Counter
-            </NavLink>
-        </div>
-
-        <div class="nav-item px-3">
-            <NavLink class="nav-link" href="weather">
-                <span class="bi bi-list-nested-nav-menu" aria-hidden="true"></span> Weather
-            </NavLink>
-        </div>
-
-        <div class="nav-item px-3">
-            <NavLink class="nav-link" href="auth">
-                <span class="bi bi-lock-nav-menu" aria-hidden="true"></span> Auth Required
+        <div class="nav-item px-2 py-1">
+            <NavLink class="nav-link rounded" href="events">
+                <span class="bi bi-calendar-event-nav-menu" aria-hidden="true"></span> Browse Events
             </NavLink>
         </div>
 
         <AuthorizeView>
             <Authorized>
-                <div class="nav-item px-3">
-                    <NavLink class="nav-link" href="Account/Manage">
-                        <span class="bi bi-person-fill-nav-menu" aria-hidden="true"></span> @context.User.Identity?.Name
+                <div class="nav-item px-2 py-1">
+                    <NavLink class="nav-link rounded" href="my-registrations">
+                        <span class="bi bi-ticket-perforated-nav-menu" aria-hidden="true"></span> My Registrations
                     </NavLink>
-                </div>
-                <div class="nav-item px-3">
-                    <form action="Account/Logout" method="post">
-                        <AntiforgeryToken />
-                        <input type="hidden" name="ReturnUrl" value="@currentUrl" />
-                        <button type="submit" class="nav-link">
-                            <span class="bi bi-arrow-bar-left-nav-menu" aria-hidden="true"></span> Logout
-                        </button>
-                    </form>
                 </div>
             </Authorized>
-            <NotAuthorized>
-                <div class="nav-item px-3">
-                    <NavLink class="nav-link" href="Account/Register">
-                        <span class="bi bi-person-nav-menu" aria-hidden="true"></span> Register
+        </AuthorizeView>
+
+        <AuthorizeView Roles="Admin">
+            <Authorized>
+                <hr class="my-2 mx-3" />
+                <div class="px-3 py-2">
+                    <small class="text-muted text-uppercase fw-bold">Admin</small>
+                </div>
+                
+                <div class="nav-item px-2 py-1">
+                    <NavLink class="nav-link rounded" href="admin/events">
+                        <span class="bi bi-calendar-plus-nav-menu" aria-hidden="true"></span> Manage Events
                     </NavLink>
                 </div>
-                <div class="nav-item px-3">
-                    <NavLink class="nav-link" href="Account/Login">
-                        <span class="bi bi-person-badge-nav-menu" aria-hidden="true"></span> Login
+
+                <div class="nav-item px-2 py-1">
+                    <NavLink class="nav-link rounded" href="admin/venues">
+                        <span class="bi bi-building-nav-menu" aria-hidden="true"></span> Manage Venues
                     </NavLink>
                 </div>
-            </NotAuthorized>
+
+                <div class="nav-item px-2 py-1">
+                    <NavLink class="nav-link rounded" href="admin/activities">
+                        <span class="bi bi-list-check-nav-menu" aria-hidden="true"></span> Manage Activities
+                    </NavLink>
+                </div>
+
+                <div class="nav-item px-2 py-1">
+                    <NavLink class="nav-link rounded" href="admin/registrations">
+                        <span class="bi bi-people-nav-menu" aria-hidden="true"></span> All Registrations
+                    </NavLink>
+                </div>
+            </Authorized>
         </AuthorizeView>
     </nav>
 </div>
