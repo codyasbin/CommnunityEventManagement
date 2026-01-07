@@ -10,6 +10,15 @@ namespace CommnunityEventManagement.Services
         public int? ActivityId { get; set; }
         public EventStatus? Status { get; set; }
         public string? SearchTerm { get; set; }
+
+        // Convert to UTC for PostgreSQL compatibility
+        public DateTime? FromDateUtc => FromDate.HasValue 
+            ? DateTime.SpecifyKind(FromDate.Value.Date, DateTimeKind.Utc) 
+            : null;
+
+        public DateTime? ToDateUtc => ToDate.HasValue 
+            ? DateTime.SpecifyKind(ToDate.Value.Date.AddDays(1).AddTicks(-1), DateTimeKind.Utc) 
+            : null;
     }
 
     public interface IEventService

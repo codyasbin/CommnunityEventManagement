@@ -26,7 +26,7 @@ namespace CommnunityEventManagement.Services
 
         public async Task<List<Event>> GetUpcomingEventsAsync()
         {
-            var today = DateTime.UtcNow.Date;
+            var today = DateTime.SpecifyKind(DateTime.UtcNow.Date, DateTimeKind.Utc);
             return await _context.Events
                 .Include(e => e.Venue)
                 .Include(e => e.EventActivities)
@@ -47,11 +47,11 @@ namespace CommnunityEventManagement.Services
                 .Include(e => e.Registrations)
                 .AsQueryable();
 
-            if (filter.FromDate.HasValue)
-                query = query.Where(e => e.EventDate >= filter.FromDate.Value);
+            if (filter.FromDateUtc.HasValue)
+                query = query.Where(e => e.EventDate >= filter.FromDateUtc.Value);
 
-            if (filter.ToDate.HasValue)
-                query = query.Where(e => e.EventDate <= filter.ToDate.Value);
+            if (filter.ToDateUtc.HasValue)
+                query = query.Where(e => e.EventDate <= filter.ToDateUtc.Value);
 
             if (filter.VenueId.HasValue)
                 query = query.Where(e => e.VenueId == filter.VenueId.Value);
@@ -85,6 +85,8 @@ namespace CommnunityEventManagement.Services
 
         public async Task<Event> CreateAsync(Event evt, List<int> activityIds)
         {
+            // Ensure EventDate is UTC
+            evt.EventDate = DateTime.SpecifyKind(evt.EventDate, DateTimeKind.Utc);
             evt.CreatedAt = DateTime.UtcNow;
 
             foreach (var activityId in activityIds)
@@ -108,7 +110,7 @@ namespace CommnunityEventManagement.Services
 
             existing.Name = evt.Name;
             existing.Description = evt.Description;
-            existing.EventDate = evt.EventDate;
+            existing.EventDate = DateTime.SpecifyKind(evt.EventDate, DateTimeKind.Utc);
             existing.StartTime = evt.StartTime;
             existing.EndTime = evt.EndTime;
             existing.Capacity = evt.Capacity;
