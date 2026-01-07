@@ -5,6 +5,7 @@
 @inject IVenueService VenueService
 @inject IActivityService ActivityService
 @inject NavigationManager NavigationManager
+@rendermode InteractiveServer
 
 <PageTitle>Browse Events - CEMS</PageTitle>
 
@@ -22,19 +23,19 @@
             <div class="col-md-3">
                 <label class="form-label">Search</label>
                 <input type="text" class="form-control" placeholder="Search events..." 
-                       @bind="filter.SearchTerm" @bind:event="oninput" @onkeyup="OnFilterChange" />
+                       @bind="filter.SearchTerm" @bind:event="oninput" @bind:after="OnFilterChange" />
             </div>
             <div class="col-md-2">
                 <label class="form-label">From Date</label>
-                <input type="date" class="form-control" @bind="filter.FromDate" @bind:event="onchange" @onchange="OnFilterChange" />
+                <input type="date" class="form-control" @bind="filter.FromDate" @bind:after="OnFilterChange" />
             </div>
             <div class="col-md-2">
                 <label class="form-label">To Date</label>
-                <input type="date" class="form-control" @bind="filter.ToDate" @bind:event="onchange" @onchange="OnFilterChange" />
+                <input type="date" class="form-control" @bind="filter.ToDate" @bind:after="OnFilterChange" />
             </div>
             <div class="col-md-2">
                 <label class="form-label">Venue</label>
-                <select class="form-select" @bind="filter.VenueId" @bind:event="onchange" @onchange="OnFilterChange">
+                <select class="form-select" @bind="filter.VenueId" @bind:after="OnFilterChange">
                     <option value="">All Venues</option>
                     @foreach (var venue in venues)
                     {
@@ -44,7 +45,7 @@
             </div>
             <div class="col-md-2">
                 <label class="form-label">Activity</label>
-                <select class="form-select" @bind="filter.ActivityId" @bind:event="onchange" @onchange="OnFilterChange">
+                <select class="form-select" @bind="filter.ActivityId" @bind:after="OnFilterChange">
                     <option value="">All Activities</option>
                     @foreach (var activity in activities)
                     {

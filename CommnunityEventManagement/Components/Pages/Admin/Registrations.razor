@@ -1,0 +1,217 @@
+@page "/admin/registrations"
+@using CommnunityEventManagement.Data
+@using CommnunityEventManagement.Data.Models
+@using CommnunityEventManagement.Services
+@using Microsoft.AspNetCore.Authorization
+@using Microsoft.EntityFrameworkCore
+@attribute [Authorize(Roles = "Admin")]
+@inject ApplicationDbContext DbContext
+@inject IEventService EventService
+
+<PageTitle>All Registrations - CEMS Admin</PageTitle>
+
+<div class="container py-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h1 class="fw-bold mb-1">?? All Registrations</h1>
+            <p class="text-muted mb-0">View all event registrations across the system</p>
+        </div>
+    </div>
+
+    <!-- Filter Section -->
+    <div class="filter-section">
+        <div class="row g-3">
+            <div class="col-md-4">
+                <label class="form-label">Event</label>
+                <select class="form-select" @bind="selectedEventId" @bind:event="onchange" @onchange="LoadRegistrations">
+                    <option value="0">All Events</option>
+                    @foreach (var evt in events)
+                    {
+                        <option value="@evt.Id">@evt.Name</option>
+                    }
+                </select>
+            </div>
+            <div class="col-md-3">
+                <label class="form-label">Status</label>
+                <select class="form-select" @bind="selectedStatus" @bind:event="onchange" @onchange="LoadRegistrations">
+                    <option value="">All Statuses</option>
+                    @foreach (var status in Enum.GetValues<RegistrationStatus>())
+                    {
+                        <option value="@status">@status</option>
+                    }
+                </select>
+            </div>
+            <div class="col-md-3">
+                <label class="form-label">Search</label>
+                <input type="text" class="form-control" placeholder="Search by name or email..." 
+                       @bind="searchTerm" @bind:event="oninput" @onkeyup="LoadRegistrations" />
+            </div>
+            <div class="col-md-2 d-flex align-items-end">
+                <button class="btn btn-outline-secondary w-100" @onclick="ClearFilters">
+                    Clear
+                </button>
+            </div>
+        </div>
+    </div>
+
+    @if (isLoading)
+    {
+        <div class="loading-spinner">
+            <div class="spinner-border" role="status">
+                <span class="visually-hidden">Loading...</span>
+            </div>
+        </div>
+    }
+    else if (!filteredRegistrations.Any())
+    {
+        <div class="empty-state">
+            <div style="font-size: 4rem;">??</div>
+            <h3>No Registrations Found</h3>
+            <p>No registrations match your current filters.</p>
+        </div>
+    }
+    else
+    {
+        <div class="mb-3 text-muted">
+            Showing @filteredRegistrations.Count registration(s)
+        </div>
+
+        <div class="table-responsive">
+            <table class="table table-hover bg-white rounded shadow-sm">
+                <thead>
+                    <tr>
+                        <th>Participant</th>
+                        <th>Email</th>
+                        <th>Event</th>
+                        <th>Event Date</th>
+                        <th>Registration Date</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var reg in filteredRegistrations)
+                    {
+                        <tr>
+                            <td class="fw-medium">@reg.User?.FullName</td>
+                            <td>@reg.User?.Email</td>
+                            <td>
+                                <a href="events/@reg.EventId" class="text-decoration-none">
+                                    @reg.Event?.Name
+                                </a>
+                            </td>
+                            <td>@reg.Event?.EventDate.ToString("MMM dd, yyyy")</td>
+                            <td>@reg.RegistrationDate.ToString("MMM dd, yyyy HH:mm")</td>
+                            <td>
+                                <span class="badge badge-@reg.Status.ToString().ToLower()">@reg.Status</span>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Summary Stats -->
+        <div class="row g-4 mt-4">
+            <div class="col-md-4">
+                <div class="stat-card">
+                    <div class="d-flex align-items-center">
+                        <div class="stat-icon primary me-3">?</div>
+                        <div>
+                            <div class="stat-value">@filteredRegistrations.Count(r => r.Status == RegistrationStatus.Confirmed)</div>
+                            <div class="stat-label">Confirmed</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="stat-card">
+                    <div class="d-flex align-items-center">
+                        <div class="stat-icon warning me-3">?</div>
+                        <div>
+                            <div class="stat-value">@filteredRegistrations.Count(r => r.Status == RegistrationStatus.Waitlisted)</div>
+                            <div class="stat-label">Waitlisted</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="stat-card">
+                    <div class="d-flex align-items-center">
+                        <div class="stat-icon success me-3">?</div>
+                        <div>
+                            <div class="stat-value">@filteredRegistrations.Count(r => r.Status == RegistrationStatus.Cancelled)</div>
+                            <div class="stat-label">Cancelled</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+</div>
+
+@code {
+    private List<Registration> allRegistrations = new();
+    private List<Registration> filteredRegistrations = new();
+    private List<Event> events = new();
+    private bool isLoading = true;
+    private int selectedEventId = 0;
+    private string selectedStatus = "";
+    private string searchTerm = "";
+
+    protected override async Task OnInitializedAsync()
+    {
+        events = await EventService.GetAllAsync();
+        await LoadRegistrations();
+    }
+
+    private async Task LoadRegistrations()
+    {
+        isLoading = true;
+        try
+        {
+            var query = DbContext.Registrations
+                .Include(r => r.User)
+                .Include(r => r.Event)
+                    .ThenInclude(e => e.Venue)
+                .AsQueryable();
+
+            if (selectedEventId > 0)
+            {
+                query = query.Where(r => r.EventId == selectedEventId);
+            }
+
+            if (!string.IsNullOrEmpty(selectedStatus) && Enum.TryParse<RegistrationStatus>(selectedStatus, out var status))
+            {
+                query = query.Where(r => r.Status == status);
+            }
+
+            allRegistrations = await query.OrderByDescending(r => r.RegistrationDate).ToListAsync();
+
+            // Apply search filter in memory (for user name/email)
+            if (!string.IsNullOrWhiteSpace(searchTerm))
+            {
+                var term = searchTerm.ToLower();
+                filteredRegistrations = allRegistrations
+                    .Where(r => (r.User?.FullName?.ToLower().Contains(term) == true) ||
+                               (r.User?.Email?.ToLower().Contains(term) == true))
+                    .ToList();
+            }
+            else
+            {
+                filteredRegistrations = allRegistrations;
+            }
+        }
+        finally
+        {
+            isLoading = false;
+        }
+    }
+
+    private async Task ClearFilters()
+    {
+        selectedEventId = 0;
+        selectedStatus = "";
+        searchTerm = "";
+        await LoadRegistrations();
+    }
+}

@@ -1,0 +1,426 @@
+@page "/admin/events"
+@using CommnunityEventManagement.Data.Models
+@using CommnunityEventManagement.Services
+@using Microsoft.AspNetCore.Authorization
+@attribute [Authorize(Roles = "Admin")]
+@inject IEventService EventService
+@inject IVenueService VenueService
+@inject IActivityService ActivityService
+@inject NavigationManager NavigationManager
+@rendermode InteractiveServer
+
+<PageTitle>Manage Events - CEMS Admin</PageTitle>
+
+<div class="container py-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h1 class="fw-bold mb-1">?? Manage Events</h1>
+            <p class="text-muted mb-0">Create and manage community events</p>
+        </div>
+        <button class="btn btn-primary" @onclick="ShowCreateModal">
+            + Create Event
+        </button>
+    </div>
+
+    @if (!string.IsNullOrEmpty(message))
+    {
+        <div class="alert @(isSuccess ? "alert-success" : "alert-danger") alert-dismissible fade show">
+            @message
+            <button type="button" class="btn-close" @onclick="() => message = null"></button>
+        </div>
+    }
+
+    @if (isLoading)
+    {
+        <div class="loading-spinner">
+            <div class="spinner-border" role="status">
+                <span class="visually-hidden">Loading...</span>
+            </div>
+        </div>
+    }
+    else if (!events.Any())
+    {
+        <div class="empty-state">
+            <div style="font-size: 4rem;">??</div>
+            <h3>No Events Yet</h3>
+            <p>Create your first event to get started.</p>
+            <button class="btn btn-primary" @onclick="ShowCreateModal">Create Event</button>
+        </div>
+    }
+    else
+    {
+        <div class="table-responsive">
+            <table class="table table-hover bg-white rounded shadow-sm">
+                <thead>
+                    <tr>
+                        <th>Event</th>
+                        <th>Date & Time</th>
+                        <th>Venue</th>
+                        <th>Capacity</th>
+                        <th>Registrations</th>
+                        <th>Status</th>
+                        <th class="text-end">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var evt in events)
+                    {
+                        <tr>
+                            <td>
+                                <div class="fw-medium">@evt.Name</div>
+                                <div class="text-muted small">
+                                    @foreach (var ea in evt.EventActivities.Take(2))
+                                    {
+                                        <span class="activity-tag">@ea.Activity?.Name</span>
+                                    }
+                                </div>
+                            </td>
+                            <td>
+                                <div>@evt.EventDate.ToString("MMM dd, yyyy")</div>
+                                <div class="text-muted small">@evt.StartTime.ToString(@"hh\:mm")</div>
+                            </td>
+                            <td>@evt.Venue?.Name</td>
+                            <td>@evt.Capacity</td>
+                            <td>
+                                <div class="d-flex align-items-center gap-2">
+                                    <span>@evt.RegisteredCount / @evt.Capacity</span>
+                                    @if (evt.IsFull)
+                                    {
+                                        <span class="badge badge-full">Full</span>
+                                    }
+                                </div>
+                            </td>
+                            <td>
+                                <span class="badge badge-@evt.Status.ToString().ToLower()">@evt.Status</span>
+                            </td>
+                            <td class="text-end">
+                                <a href="events/@evt.Id" class="btn btn-sm btn-outline-secondary me-1">
+                                    View
+                                </a>
+                                <button class="btn btn-sm btn-outline-primary me-1" @onclick="() => ShowEditModal(evt)">
+                                    Edit
+                                </button>
+                                <button class="btn btn-sm btn-outline-danger" @onclick="() => ShowDeleteConfirmation(evt)">
+                                    Delete
+                                </button>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    }
+</div>
+
+<!-- Create/Edit Modal -->
+@if (showModal)
+{
+    <div class="modal fade show d-block" tabindex="-1" style="background-color: rgba(0,0,0,0.5);">
+        <div class="modal-dialog modal-dialog-centered modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">@(isEditing ? "Edit Event" : "Create Event")</h5>
+                    <button type="button" class="btn-close" @onclick="CloseModal"></button>
+                </div>
+                <EditForm Model="currentEvent" OnValidSubmit="SaveEvent">
+                    <DataAnnotationsValidator />
+                    <div class="modal-body">
+                        <div class="row">
+                            <div class="col-md-8 mb-3">
+                                <label class="form-label">Event Name *</label>
+                                <InputText class="form-control" @bind-Value="currentEvent.Name" />
+                                <ValidationMessage For="@(() => currentEvent.Name)" class="text-danger" />
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <label class="form-label">Status</label>
+                                <InputSelect class="form-select" @bind-Value="currentEvent.Status">
+                                    @foreach (var status in Enum.GetValues<EventStatus>())
+                                    {
+                                        <option value="@status">@status</option>
+                                    }
+                                </InputSelect>
+                            </div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label class="form-label">Description *</label>
+                            <InputTextArea class="form-control" @bind-Value="currentEvent.Description" rows="3" />
+                            <ValidationMessage For="@(() => currentEvent.Description)" class="text-danger" />
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-4 mb-3">
+                                <label class="form-label">Event Date *</label>
+                                <InputDate class="form-control" @bind-Value="currentEvent.EventDate" />
+                                <ValidationMessage For="@(() => currentEvent.EventDate)" class="text-danger" />
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <label class="form-label">Start Time *</label>
+                                <input type="time" class="form-control" @bind="startTimeString" />
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <label class="form-label">End Time</label>
+                                <input type="time" class="form-control" @bind="endTimeString" />
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-8 mb-3">
+                                <label class="form-label">Venue *</label>
+                                <InputSelect class="form-select" @bind-Value="currentEvent.VenueId">
+                                    <option value="0">Select a venue...</option>
+                                    @foreach (var venue in venues)
+                                    {
+                                        <option value="@venue.Id">@venue.Name (Capacity: @venue.MaxCapacity)</option>
+                                    }
+                                </InputSelect>
+                                <ValidationMessage For="@(() => currentEvent.VenueId)" class="text-danger" />
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <label class="form-label">Event Capacity *</label>
+                                <InputNumber class="form-control" @bind-Value="currentEvent.Capacity" />
+                                <ValidationMessage For="@(() => currentEvent.Capacity)" class="text-danger" />
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">Activities</label>
+                            <div class="border rounded p-3" style="max-height: 150px; overflow-y: auto;">
+                                @foreach (var activity in allActivities)
+                                {
+                                    <div class="form-check">
+                                        <input type="checkbox" class="form-check-input" id="activity-@activity.Id"
+                                               checked="@selectedActivityIds.Contains(activity.Id)"
+                                               @onchange="@(e => ToggleActivity(activity.Id, (bool)(e.Value ?? false)))" />
+                                        <label class="form-check-label" for="activity-@activity.Id">
+                                            @activity.Name
+                                            @if (!string.IsNullOrEmpty(activity.Category))
+                                            {
+                                                <span class="text-muted small">(@activity.Category)</span>
+                                            }
+                                        </label>
+                                    </div>
+                                }
+                                @if (!allActivities.Any())
+                                {
+                                    <p class="text-muted mb-0">No activities available. <a href="admin/activities">Create some first.</a></p>
+                                }
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">Image URL (optional)</label>
+                            <InputText class="form-control" @bind-Value="currentEvent.ImageUrl" placeholder="https://..." />
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" @onclick="CloseModal">Cancel</button>
+                        <button type="submit" class="btn btn-primary" disabled="@isSaving">
+                            @if (isSaving)
+                            {
+                                <span class="spinner-border spinner-border-sm me-2"></span>
+                            }
+                            @(isEditing ? "Save Changes" : "Create Event")
+                        </button>
+                    </div>
+                </EditForm>
+            </div>
+        </div>
+    </div>
+}
+
+<!-- Delete Confirmation Modal -->
+@if (eventToDelete != null)
+{
+    <div class="modal fade show d-block" tabindex="-1" style="background-color: rgba(0,0,0,0.5);">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Delete Event</h5>
+                    <button type="button" class="btn-close" @onclick="() => eventToDelete = null"></button>
+                </div>
+                <div class="modal-body">
+                    <p>Are you sure you want to delete the event:</p>
+                    <p class="fw-bold">@eventToDelete.Name</p>
+                    @if (eventToDelete.RegisteredCount > 0)
+                    {
+                        <p class="text-warning">?? This event has @eventToDelete.RegisteredCount registration(s).</p>
+                    }
+                    <p class="text-danger small">This action cannot be undone.</p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" @onclick="() => eventToDelete = null">Cancel</button>
+                    <button type="button" class="btn btn-danger" @onclick="DeleteEvent" disabled="@isDeleting">
+                        @if (isDeleting)
+                        {
+                            <span class="spinner-border spinner-border-sm me-2"></span>
+                        }
+                        Delete Event
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+@code {
+    private List<Event> events = new();
+    private List<Venue> venues = new();
+    private List<Activity> allActivities = new();
+    private List<int> selectedActivityIds = new();
+    private Event currentEvent = new() { EventDate = DateTime.Today.AddDays(7) };
+    private Event? eventToDelete;
+    private bool isLoading = true;
+    private bool showModal = false;
+    private bool isEditing = false;
+    private bool isSaving = false;
+    private bool isDeleting = false;
+    private string? message;
+    private bool isSuccess = false;
+    private string startTimeString = "09:00";
+    private string endTimeString = "17:00";
+
+    protected override async Task OnInitializedAsync()
+    {
+        venues = await VenueService.GetAllAsync();
+        allActivities = await ActivityService.GetAllAsync();
+        await LoadEvents();
+    }
+
+    private async Task LoadEvents()
+    {
+        isLoading = true;
+        try
+        {
+            events = await EventService.GetAllAsync();
+        }
+        finally
+        {
+            isLoading = false;
+        }
+    }
+
+    private void ShowCreateModal()
+    {
+        currentEvent = new Event { EventDate = DateTime.Today.AddDays(7), Capacity = 50 };
+        selectedActivityIds = new List<int>();
+        startTimeString = "09:00";
+        endTimeString = "17:00";
+        isEditing = false;
+        showModal = true;
+    }
+
+    private void ShowEditModal(Event evt)
+    {
+        currentEvent = new Event
+        {
+            Id = evt.Id,
+            Name = evt.Name,
+            Description = evt.Description,
+            EventDate = evt.EventDate,
+            StartTime = evt.StartTime,
+            EndTime = evt.EndTime,
+            Capacity = evt.Capacity,
+            Status = evt.Status,
+            VenueId = evt.VenueId,
+            ImageUrl = evt.ImageUrl
+        };
+        selectedActivityIds = evt.EventActivities.Select(ea => ea.ActivityId).ToList();
+        startTimeString = evt.StartTime.ToString(@"hh\:mm");
+        endTimeString = evt.EndTime?.ToString(@"hh\:mm") ?? "";
+        isEditing = true;
+        showModal = true;
+    }
+
+    private void CloseModal()
+    {
+        showModal = false;
+        currentEvent = new Event { EventDate = DateTime.Today.AddDays(7) };
+        selectedActivityIds = new List<int>();
+    }
+
+    private void ToggleActivity(int activityId, bool isChecked)
+    {
+        if (isChecked && !selectedActivityIds.Contains(activityId))
+        {
+            selectedActivityIds.Add(activityId);
+        }
+        else if (!isChecked)
+        {
+            selectedActivityIds.Remove(activityId);
+        }
+    }
+
+    private async Task SaveEvent()
+    {
+        isSaving = true;
+        try
+        {
+            // Parse time strings
+            if (TimeSpan.TryParse(startTimeString, out var startTime))
+            {
+                currentEvent.StartTime = startTime;
+            }
+            if (!string.IsNullOrEmpty(endTimeString) && TimeSpan.TryParse(endTimeString, out var endTime))
+            {
+                currentEvent.EndTime = endTime;
+            }
+            else
+            {
+                currentEvent.EndTime = null;
+            }
+
+            if (isEditing)
+            {
+                await EventService.UpdateAsync(currentEvent, selectedActivityIds);
+                message = "Event updated successfully.";
+            }
+            else
+            {
+                await EventService.CreateAsync(currentEvent, selectedActivityIds);
+                message = "Event created successfully.";
+            }
+            isSuccess = true;
+            CloseModal();
+            await LoadEvents();
+        }
+        catch (Exception ex)
+        {
+            isSuccess = false;
+            message = ex.Message;
+        }
+        finally
+        {
+            isSaving = false;
+        }
+    }
+
+    private void ShowDeleteConfirmation(Event evt)
+    {
+        eventToDelete = evt;
+    }
+
+    private async Task DeleteEvent()
+    {
+        if (eventToDelete == null) return;
+
+        isDeleting = true;
+        try
+        {
+            await EventService.DeleteAsync(eventToDelete.Id);
+            isSuccess = true;
+            message = "Event deleted successfully.";
+            eventToDelete = null;
+            await LoadEvents();
+        }
+        catch (Exception ex)
+        {
+            isSuccess = false;
+            message = ex.Message;
+        }
+        finally
+        {
+            isDeleting = false;
+        }
+    }
+}
