@@ -16,28 +16,28 @@
     <!-- Stats Cards -->
     <div class="admin-stats">
         <div class="stat-card">
-            <div class="stat-icon events">??</div>
+            <div class="stat-icon events">&#x1F4C5;</div>
             <div class="stat-info">
                 <h3>@totalEvents</h3>
                 <p>Total Events</p>
             </div>
         </div>
         <div class="stat-card">
-            <div class="stat-icon venues">??</div>
+            <div class="stat-icon venues">&#x1F3E2;</div>
             <div class="stat-info">
                 <h3>@totalVenues</h3>
                 <p>Venues</p>
             </div>
         </div>
         <div class="stat-card">
-            <div class="stat-icon activities">??</div>
+            <div class="stat-icon activities">&#x1F3AF;</div>
             <div class="stat-info">
                 <h3>@totalActivities</h3>
                 <p>Activities</p>
             </div>
         </div>
         <div class="stat-card">
-            <div class="stat-icon registrations">??</div>
+            <div class="stat-icon registrations">&#x1F465;</div>
             <div class="stat-info">
                 <h3>@totalRegistrations</h3>
                 <p>Registrations</p>
@@ -50,7 +50,7 @@
         <div class="col-lg-8">
             <div class="admin-table-card">
                 <div class="admin-table-header">
-                    <h2>?? Upcoming Events</h2>
+                    <h2>Upcoming Events</h2>
                     <a href="admin/events" class="btn btn-sm btn-primary">Manage Events</a>
                 </div>
                 <div class="table-responsive">
@@ -109,21 +109,21 @@
         <div class="col-lg-4">
             <div class="admin-table-card">
                 <div class="admin-table-header">
-                    <h2>? Quick Actions</h2>
+                    <h2>&#x26A1; Quick Actions</h2>
                 </div>
                 <div class="p-3">
                     <div class="d-grid gap-2">
                         <a href="admin/events" class="btn btn-outline-primary text-start">
-                            <span class="me-2">??</span> Create New Event
+                            <span class="me-2">&#x1F4C5;</span> Create New Event
                         </a>
                         <a href="admin/venues" class="btn btn-outline-primary text-start">
-                            <span class="me-2">??</span> Add New Venue
+                            <span class="me-2">&#x1F3E2;</span> Add New Venue
                         </a>
                         <a href="admin/activities" class="btn btn-outline-primary text-start">
-                            <span class="me-2">??</span> Add New Activity
+                            <span class="me-2">&#x1F3AF;</span> Add New Activity
                         </a>
                         <a href="admin/registrations" class="btn btn-outline-primary text-start">
-                            <span class="me-2">??</span> View All Registrations
+                            <span class="me-2">&#x1F465;</span> View All Registrations
                         </a>
                     </div>
                 </div>
@@ -131,7 +131,7 @@
 
             <div class="admin-table-card mt-4">
                 <div class="admin-table-header">
-                    <h2>?? Recent Registrations</h2>
+                    <h2>&#x1F4CA; Recent Registrations</h2>
                 </div>
                 <div class="p-3">
                     @if (recentRegistrations.Any())
@@ -140,14 +140,14 @@
                         {
                             <div class="d-flex align-items-center gap-3 py-2 border-bottom">
                                 <div class="flex-shrink-0">
-                                    <div class="avatar-circle">??</div>
+                                    <div class="avatar-circle">&#x1F464;</div>
                                 </div>
                                 <div class="flex-grow-1 min-width-0">
                                     <div class="fw-medium text-truncate">@reg.User?.FullName</div>
                                     <div class="text-muted small text-truncate">@reg.Event?.Name</div>
                                 </div>
                                 <div class="flex-shrink-0">
-                                    <span class="badge badge-@reg.Status.ToString().ToLower()">@reg.Status</span>
+                                    <span class="badge bg-@(reg.Status == RegistrationStatus.Confirmed ? "success" : reg.Status == RegistrationStatus.Cancelled ? "danger" : "warning")">@reg.Status</span>
                                 </div>
                             </div>
                         }

@@ -5,7 +5,7 @@
     <nav class="navbar navbar-expand-lg navbar-light sticky-top">
         <div class="container">
             <a class="navbar-brand" href="/">
-                <span class="brand-icon">??</span>
+                <span class="brand-icon">&#x1F389;</span>
                 <span class="brand-text">CEMS</span>
             </a>
             
@@ -41,16 +41,16 @@
                         <Authorized>
                             <div class="dropdown">
                                 <button class="btn btn-user dropdown-toggle" type="button" data-bs-toggle="dropdown">
-                                    <span class="user-avatar-small">??</span>
+                                    <span class="user-avatar-small">&#x1F464;</span>
                                     <span class="user-name-nav">@authContext.User.Identity?.Name</span>
                                 </button>
                                 <ul class="dropdown-menu dropdown-menu-end">
-                                    <li><a class="dropdown-item" href="Account/Manage">?? Account Settings</a></li>
-                                    <li><a class="dropdown-item" href="my-registrations">?? My Registrations</a></li>
+                                    <li><a class="dropdown-item" href="Account/Manage">&#x2699;&#xFE0F; Account Settings</a></li>
+                                    <li><a class="dropdown-item" href="my-registrations">&#x1F3AB; My Registrations</a></li>
                                     <AuthorizeView Roles="Admin" Context="adminContext">
                                         <Authorized>
                                             <li><hr class="dropdown-divider"></li>
-                                            <li><a class="dropdown-item" href="admin">?? Admin Dashboard</a></li>
+                                            <li><a class="dropdown-item" href="admin">&#x1F527; Admin Dashboard</a></li>
                                         </Authorized>
                                     </AuthorizeView>
                                     <li><hr class="dropdown-divider"></li>
@@ -59,7 +59,7 @@
                                             <AntiforgeryToken />
                                             <input type="hidden" name="ReturnUrl" value="/" />
                                             <button type="submit" class="dropdown-item text-danger">
-                                                ?? Logout
+                                                &#x1F6AA; Logout
                                             </button>
                                         </form>
                                     </li>
@@ -87,7 +87,7 @@
             <div class="row">
                 <div class="col-md-4 mb-4 mb-md-0">
                     <div class="footer-brand">
-                        <span class="brand-icon">??</span>
+                        <span class="brand-icon">&#x1F389;</span>
                         <span class="brand-text">CEMS</span>
                     </div>
                     <p class="footer-tagline">Community Event Management System</p>
@@ -113,9 +113,9 @@
                     <h6 class="footer-title">Stay Connected</h6>
                     <p class="footer-desc">Join our community and never miss an event!</p>
                     <div class="social-links">
-                        <a href="#" class="social-link">??</a>
-                        <a href="#" class="social-link">??</a>
-                        <a href="#" class="social-link">??</a>
+                        <a href="#" class="social-link">&#x1F4D8;</a>
+                        <a href="#" class="social-link">&#x1F426;</a>
+                        <a href="#" class="social-link">&#x1F4F7;</a>
                     </div>
                 </div>
             </div>
@@ -130,5 +130,5 @@
 <div id="blazor-error-ui" data-nosnippet>
     An unhandled error has occurred.
     <a href="." class="reload">Reload</a>
-    <span class="dismiss">??</span>
+    <span class="dismiss">&#x2717;</span>
 </div>

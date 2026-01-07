@@ -11,7 +11,7 @@
 
 <div class="d-flex justify-content-between align-items-center mb-4">
     <div>
-        <h2 class="fw-bold mb-1">?? Manage Venues</h2>
+        <h2 class="fw-bold mb-1">Manage Venues</h2>
         <p class="text-muted mb-0">Create and manage event venues</p>
     </div>
     <button class="btn btn-primary" @onclick="ShowCreateModal">
@@ -29,7 +29,7 @@
 
 @if (isLoading)
 {
-    <div class="loading-spinner">
+    <div class="text-center py-5">
         <div class="spinner-border" role="status">
             <span class="visually-hidden">Loading...</span>
         </div>
@@ -37,8 +37,8 @@
 }
 else if (!venues.Any())
 {
-    <div class="empty-state">
-        <div style="font-size: 4rem;">???</div>
+    <div class="text-center py-5">
+        <div class="display-1 text-muted">&#x1F3E2;</div>
         <h3>No Venues Yet</h3>
         <p>Create your first venue to get started.</p>
         <button class="btn btn-primary" @onclick="ShowCreateModal">Add Venue</button>

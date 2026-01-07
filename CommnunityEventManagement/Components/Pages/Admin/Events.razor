@@ -15,7 +15,7 @@
 
 <div class="d-flex justify-content-between align-items-center mb-4">
     <div>
-        <h2 class="fw-bold mb-1">?? Manage Events</h2>
+        <h2 class="fw-bold mb-1"><i class="bi bi-calendar-event me-2"></i>Manage Events</h2>
         <p class="text-muted mb-0">Create and manage community events</p>
     </div>
     <button class="btn btn-primary" @onclick="ShowCreateModal">
@@ -33,7 +33,7 @@
 
 @if (isLoading)
 {
-    <div class="loading-spinner">
+    <div class="text-center py-5">
         <div class="spinner-border" role="status">
             <span class="visually-hidden">Loading...</span>
         </div>
@@ -41,8 +41,8 @@
 }
 else if (!events.Any())
 {
-    <div class="empty-state">
-        <div style="font-size: 4rem;">???</div>
+    <div class="text-center py-5">
+        <div class="display-1 text-muted">??</div>
         <h3>No Events Yet</h3>
         <p>Create your first event to get started.</p>
         <button class="btn btn-primary" @onclick="ShowCreateModal">Create Event</button>
@@ -72,7 +72,7 @@ else
                             <div class="text-muted small">
                                 @foreach (var ea in evt.EventActivities.Take(2))
                                 {
-                                    <span class="activity-tag">@ea.Activity?.Name</span>
+                                    <span class="badge bg-light text-dark me-1">@ea.Activity?.Name</span>
                                 }
                             </div>
                         </td>
@@ -87,23 +87,17 @@ else
                                 <span>@evt.RegisteredCount / @evt.Capacity</span>
                                 @if (evt.IsFull)
                                 {
-                                    <span class="badge badge-full">Full</span>
+                                    <span class="badge bg-danger">Full</span>
                                 }
                             </div>
                         </td>
                         <td>
-                            <span class="badge badge-@evt.Status.ToString().ToLower()">@evt.Status</span>
+                            <span class="badge bg-@(evt.Status == EventStatus.Upcoming ? "success" : evt.Status == EventStatus.Cancelled ? "danger" : "secondary")">@evt.Status</span>
                         </td>
                         <td class="text-end">
-                            <a href="events/@evt.Id" class="btn btn-sm btn-outline-secondary me-1">
-                                View
-                            </a>
-                            <button class="btn btn-sm btn-outline-primary me-1" @onclick="() => ShowEditModal(evt)">
-                                Edit
-                            </button>
-                            <button class="btn btn-sm btn-outline-danger" @onclick="() => ShowDeleteConfirmation(evt)">
-                                Delete
-                            </button>
+                            <a href="events/@evt.Id" class="btn btn-sm btn-outline-secondary me-1">View</a>
+                            <button class="btn btn-sm btn-outline-primary me-1" @onclick="() => ShowEditModal(evt)">Edit</button>
+                            <button class="btn btn-sm btn-outline-danger" @onclick="() => ShowDeleteConfirmation(evt)">Delete</button>
                         </td>
                     </tr>
                 }
@@ -244,7 +238,7 @@ else
                     <p class="fw-bold">@eventToDelete.Name</p>
                     @if (eventToDelete.RegisteredCount > 0)
                     {
-                        <p class="text-warning">?? This event has @eventToDelete.RegisteredCount registration(s).</p>
+                        <p class="text-warning"><strong>Warning:</strong> This event has @eventToDelete.RegisteredCount registration(s).</p>
                     }
                     <p class="text-danger small">This action cannot be undone.</p>
                 </div>

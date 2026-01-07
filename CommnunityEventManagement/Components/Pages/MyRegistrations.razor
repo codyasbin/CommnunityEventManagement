@@ -14,7 +14,7 @@
 <div class="container py-4">
     <div class="d-flex justify-content-between align-items-center mb-4">
         <div>
-            <h1 class="fw-bold mb-1">?? My Registrations</h1>
+            <h1 class="fw-bold mb-1">My Registrations</h1>
             <p class="text-muted mb-0">View and manage your event registrations</p>
         </div>
         <a href="events" class="btn btn-primary">
@@ -32,7 +32,7 @@
 
     @if (isLoading)
     {
-        <div class="loading-spinner">
+        <div class="text-center py-5">
             <div class="spinner-border" role="status">
                 <span class="visually-hidden">Loading...</span>
             </div>
@@ -40,8 +40,8 @@
     }
     else if (!registrations.Any())
     {
-        <div class="empty-state">
-            <div style="font-size: 4rem;">??</div>
+        <div class="text-center py-5">
+            <div class="display-1 text-muted">&#x1F3AB;</div>
             <h3>No Registrations Yet</h3>
             <p>You haven't registered for any events. Start exploring!</p>
             <a href="events" class="btn btn-primary">Browse Events</a>
@@ -51,7 +51,7 @@
     {
         @if (UpcomingRegistrations.Any())
         {
-            <h4 class="fw-bold mb-3">?? Upcoming Events</h4>
+            <h4 class="fw-bold mb-3">Upcoming Events</h4>
             <div class="row g-4 mb-5">
                 @foreach (var reg in UpcomingRegistrations)
                 {
@@ -60,25 +60,25 @@
                             <div class="card-body">
                                 <div class="d-flex justify-content-between align-items-start mb-2">
                                     <h5 class="card-title fw-bold mb-0">@reg.Event.Name</h5>
-                                    <span class="badge badge-confirmed">Confirmed</span>
+                                    <span class="badge bg-success">Confirmed</span>
                                 </div>
                                 
                                 <div class="text-muted small mb-3">
                                     <div class="mb-1">
-                                        ?? @reg.Event.EventDate.ToString("dddd, MMM dd, yyyy")
+                                        &#x1F4C5; @reg.Event.EventDate.ToString("dddd, MMM dd, yyyy")
                                     </div>
                                     <div class="mb-1">
-                                        ?? @reg.Event.StartTime.ToString(@"hh\:mm")
+                                        &#x1F551; @reg.Event.StartTime.ToString(@"hh\:mm")
                                     </div>
                                     <div>
-                                        ?? @reg.Event.Venue?.Name
+                                        &#x1F4CD; @reg.Event.Venue?.Name
                                     </div>
                                 </div>
 
                                 <div class="d-flex flex-wrap gap-1 mb-3">
                                     @foreach (var ea in reg.Event.EventActivities.Take(2))
                                     {
-                                        <span class="activity-tag">@ea.Activity?.Name</span>
+                                        <span class="badge bg-light text-dark">@ea.Activity?.Name</span>
                                     }
                                 </div>
 
@@ -104,7 +104,7 @@
 
         @if (PastRegistrations.Any())
         {
-            <h4 class="fw-bold mb-3">?? Past & Cancelled</h4>
+            <h4 class="fw-bold mb-3">Past & Cancelled</h4>
             <div class="table-responsive">
                 <table class="table table-hover bg-white rounded">
                     <thead>
@@ -125,7 +125,7 @@
                                 <td>@reg.Event.EventDate.ToString("MMM dd, yyyy")</td>
                                 <td>@reg.Event.Venue?.Name</td>
                                 <td>
-                                    <span class="badge badge-@reg.Status.ToString().ToLower()">@reg.Status</span>
+                                    <span class="badge bg-@(reg.Status == RegistrationStatus.Confirmed ? "success" : reg.Status == RegistrationStatus.Cancelled ? "danger" : "warning")">@reg.Status</span>
                                 </td>
                                 <td>@reg.RegistrationDate.ToString("MMM dd, yyyy")</td>
                                 <td>

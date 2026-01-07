@@ -15,7 +15,7 @@
 <div class="container py-4">
     @if (isLoading)
     {
-        <div class="loading-spinner">
+        <div class="text-center py-5">
             <div class="spinner-border" role="status">
                 <span class="visually-hidden">Loading...</span>
             </div>
@@ -23,8 +23,8 @@
     }
     else if (evt == null)
     {
-        <div class="empty-state">
-            <div style="font-size: 4rem;">??</div>
+        <div class="text-center py-5">
+            <div class="display-1 text-muted">&#x1F50D;</div>
             <h3>Event Not Found</h3>
             <p>The event you're looking for doesn't exist or has been removed.</p>
             <a href="events" class="btn btn-primary">Browse Events</a>
@@ -44,20 +44,27 @@
                 </nav>
 
                 <div class="card mb-4">
-                    <div class="event-image" style="height: 250px; @GetEventImageStyle()">
-                        <span style="font-size: 5rem;">??</span>
-                    </div>
+                    @if (!string.IsNullOrEmpty(evt.ImageUrl))
+                    {
+                        <img src="@evt.ImageUrl" class="card-img-top" alt="@evt.Name" style="height: 250px; object-fit: cover;" />
+                    }
+                    else
+                    {
+                        <div class="card-img-top d-flex align-items-center justify-content-center text-white" style="height: 250px; @GetEventImageStyle()">
+                            <span style="font-size: 5rem;">&#x1F389;</span>
+                        </div>
+                    }
                     <div class="card-body">
                         <div class="d-flex justify-content-between align-items-start mb-3">
                             <h1 class="fw-bold mb-0">@evt.Name</h1>
-                            <span class="badge badge-@evt.Status.ToString().ToLower() fs-6">@evt.Status</span>
+                            <span class="badge bg-@(evt.Status == EventStatus.Upcoming ? "success" : "secondary") fs-6">@evt.Status</span>
                         </div>
                         
                         <p class="lead text-muted">@evt.Description</p>
 
                         <hr />
 
-                        <h5 class="fw-bold mb-3">?? Activities</h5>
+                        <h5 class="fw-bold mb-3">Activities</h5>
                         <div class="d-flex flex-wrap gap-2 mb-4">
                             @foreach (var ea in evt.EventActivities)
                             {
@@ -76,7 +83,7 @@
                     <Authorized>
                         <div class="card">
                             <div class="card-header">
-                                <h5 class="mb-0">?? Registrations (@evt.Registrations.Count(r => r.Status == RegistrationStatus.Confirmed))</h5>
+                                <h5 class="mb-0">Registrations (@evt.Registrations.Count(r => r.Status == RegistrationStatus.Confirmed))</h5>
                             </div>
                             <div class="card-body">
                                 @if (evt.Registrations.Any())
@@ -99,7 +106,7 @@
                                                         <td>@reg.User?.Email</td>
                                                         <td>@reg.RegistrationDate.ToString("MMM dd, yyyy HH:mm")</td>
                                                         <td>
-                                                            <span class="badge badge-@reg.Status.ToString().ToLower()">@reg.Status</span>
+                                                            <span class="badge bg-@(reg.Status == RegistrationStatus.Confirmed ? "success" : "secondary")">@reg.Status</span>
                                                         </td>
                                                     </tr>
                                                 }
@@ -121,7 +128,7 @@
             <div class="col-lg-4">
                 <div class="card mb-4">
                     <div class="card-body">
-                        <h5 class="fw-bold mb-3">?? Event Details</h5>
+                        <h5 class="fw-bold mb-3">Event Details</h5>
                         
                         <div class="mb-3">
                             <div class="text-muted small">Date</div>
@@ -151,12 +158,12 @@
                                 <span class="fw-bold">@evt.RegisteredCount / @evt.Capacity</span>
                                 <span class="text-muted small">@evt.AvailableSpots spots left</span>
                             </div>
-                            <div class="capacity-bar">
+                            <div class="progress" style="height: 8px;">
                                 @{
                                     var percentage = evt.Capacity > 0 ? (evt.RegisteredCount * 100 / evt.Capacity) : 0;
-                                    var progressClass = percentage < 50 ? "low" : percentage < 80 ? "medium" : "high";
+                                    var barColor = percentage < 50 ? "#43e97b" : percentage < 80 ? "#ffc107" : "#dc3545";
                                 }
-                                <div class="progress @progressClass" style="width: @percentage%"></div>
+                                <div class="progress-bar" style="width: @percentage%; background-color: @barColor;"></div>
                             </div>
                         </div>
 
@@ -174,7 +181,7 @@
                                 @if (isUserRegistered)
                                 {
                                     <div class="alert alert-success mb-3">
-                                        ? You are registered for this event!
+                                        <strong>&#x2714;</strong> You are registered for this event!
                                     </div>
                                     <a href="my-registrations" class="btn btn-outline-primary w-100">
                                         View My Registrations
@@ -183,7 +190,7 @@
                                 else if (evt.IsFull)
                                 {
                                     <div class="alert alert-warning mb-0">
-                                        ?? This event is at full capacity.
+                                        This event is at full capacity.
                                     </div>
                                 }
                                 else if (!evt.IsUpcoming)
@@ -199,7 +206,7 @@
                                         {
                                             <span class="spinner-border spinner-border-sm me-2"></span>
                                         }
-                                        ?? Register Now
+                                        Register Now
                                     </button>
                                 }
                             </Authorized>
@@ -216,7 +223,7 @@
                 </div>
 
                 <a href="events" class="btn btn-outline-secondary w-100">
-                    ? Back to Events
+                    &#x2190; Back to Events
                 </a>
             </div>
         </div>

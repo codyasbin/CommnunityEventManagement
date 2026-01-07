@@ -7,7 +7,7 @@
     <aside class="admin-sidebar">
         <div class="sidebar-header">
             <div class="logo">
-                <span class="logo-icon">??</span>
+                <span class="logo-icon">&#x2699;</span>
                 <span class="logo-text">CEMS Admin</span>
             </div>
         </div>
@@ -16,7 +16,7 @@
             <div class="nav-section">
                 <div class="nav-section-title">Dashboard</div>
                 <NavLink href="admin" class="nav-item" Match="NavLinkMatch.All">
-                    <span class="nav-icon">??</span>
+                    <span class="nav-icon">&#x1F4CA;</span>
                     <span class="nav-text">Overview</span>
                 </NavLink>
             </div>
@@ -24,19 +24,19 @@
             <div class="nav-section">
                 <div class="nav-section-title">Management</div>
                 <NavLink href="admin/events" class="nav-item">
-                    <span class="nav-icon">??</span>
+                    <span class="nav-icon">&#x1F4C5;</span>
                     <span class="nav-text">Events</span>
                 </NavLink>
                 <NavLink href="admin/venues" class="nav-item">
-                    <span class="nav-icon">??</span>
+                    <span class="nav-icon">&#x1F3E2;</span>
                     <span class="nav-text">Venues</span>
                 </NavLink>
                 <NavLink href="admin/activities" class="nav-item">
-                    <span class="nav-icon">??</span>
+                    <span class="nav-icon">&#x1F3AF;</span>
                     <span class="nav-text">Activities</span>
                 </NavLink>
                 <NavLink href="admin/registrations" class="nav-item">
-                    <span class="nav-icon">??</span>
+                    <span class="nav-icon">&#x1F465;</span>
                     <span class="nav-text">Registrations</span>
                 </NavLink>
             </div>
@@ -44,7 +44,7 @@
             <div class="nav-section">
                 <div class="nav-section-title">Quick Links</div>
                 <NavLink href="/" class="nav-item">
-                    <span class="nav-icon">??</span>
+                    <span class="nav-icon">&#x1F310;</span>
                     <span class="nav-text">View Site</span>
                 </NavLink>
             </div>
@@ -54,7 +54,7 @@
             <AuthorizeView>
                 <Authorized>
                     <div class="user-info">
-                        <div class="user-avatar">??</div>
+                        <div class="user-avatar">&#x1F464;</div>
                         <div class="user-details">
                             <div class="user-name">@context.User.Identity?.Name</div>
                             <div class="user-role">Administrator</div>
@@ -64,7 +64,7 @@
                         <AntiforgeryToken />
                         <input type="hidden" name="ReturnUrl" value="/" />
                         <button type="submit" class="btn-logout">
-                            ?? Logout
+                            &#x1F6AA; Logout
                         </button>
                     </form>
                 </Authorized>
@@ -77,7 +77,7 @@
         <header class="admin-header">
             <div class="header-left">
                 <button class="btn-menu d-lg-none" @onclick="ToggleSidebar">
-                    ?
+                    &#x2630;
                 </button>
                 <h1 class="page-title">Admin Dashboard</h1>
             </div>
