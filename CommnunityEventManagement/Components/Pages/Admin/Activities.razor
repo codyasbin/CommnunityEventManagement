@@ -3,83 +3,82 @@
 @using CommnunityEventManagement.Services
 @using Microsoft.AspNetCore.Authorization
 @attribute [Authorize(Roles = "Admin")]
+@layout AdminLayout
 @inject IActivityService ActivityService
 @rendermode InteractiveServer
 
 <PageTitle>Manage Activities - CEMS Admin</PageTitle>
 
-<div class="container py-4">
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <div>
-            <h1 class="fw-bold mb-1">?? Manage Activities</h1>
-            <p class="text-muted mb-0">Create and manage event activities</p>
-        </div>
-        <button class="btn btn-primary" @onclick="ShowCreateModal">
-            + Add Activity
-        </button>
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h2 class="fw-bold mb-1">?? Manage Activities</h2>
+        <p class="text-muted mb-0">Create and manage event activities</p>
     </div>
+    <button class="btn btn-primary" @onclick="ShowCreateModal">
+        + Add Activity
+    </button>
+</div>
 
-    @if (!string.IsNullOrEmpty(message))
-    {
-        <div class="alert @(isSuccess ? "alert-success" : "alert-danger") alert-dismissible fade show">
-            @message
-            <button type="button" class="btn-close" @onclick="() => message = null"></button>
-        </div>
-    }
+@if (!string.IsNullOrEmpty(message))
+{
+    <div class="alert @(isSuccess ? "alert-success" : "alert-danger") alert-dismissible fade show">
+        @message
+        <button type="button" class="btn-close" @onclick="() => message = null"></button>
+    </div>
+}
 
-    @if (isLoading)
-    {
-        <div class="loading-spinner">
-            <div class="spinner-border" role="status">
-                <span class="visually-hidden">Loading...</span>
-            </div>
+@if (isLoading)
+{
+    <div class="loading-spinner">
+        <div class="spinner-border" role="status">
+            <span class="visually-hidden">Loading...</span>
         </div>
-    }
-    else if (!activities.Any())
-    {
-        <div class="empty-state">
-            <div style="font-size: 4rem;">??</div>
-            <h3>No Activities Yet</h3>
-            <p>Create your first activity to get started.</p>
-            <button class="btn btn-primary" @onclick="ShowCreateModal">Add Activity</button>
-        </div>
-    }
-    else
-    {
-        <div class="row g-4">
-            @foreach (var activity in activities)
-            {
-                <div class="col-md-6 col-lg-4">
-                    <div class="card h-100">
-                        <div class="card-body">
-                            <div class="d-flex justify-content-between align-items-start mb-2">
-                                <h5 class="card-title fw-bold mb-0">@activity.Name</h5>
-                                @if (!string.IsNullOrEmpty(activity.Category))
-                                {
-                                    <span class="badge bg-secondary">@activity.Category</span>
-                                }
-                            </div>
-                            <p class="text-muted small mb-3">
-                                @(activity.Description ?? "No description")
-                            </p>
-                            <div class="text-muted small mb-3">
-                                Created: @activity.CreatedAt.ToString("MMM dd, yyyy")
-                            </div>
-                            <div class="d-flex gap-2">
-                                <button class="btn btn-outline-primary btn-sm flex-grow-1" @onclick="() => ShowEditModal(activity)">
-                                    Edit
-                                </button>
-                                <button class="btn btn-outline-danger btn-sm" @onclick="() => ShowDeleteConfirmation(activity)">
-                                    Delete
-                                </button>
-                            </div>
+    </div>
+}
+else if (!activities.Any())
+{
+    <div class="empty-state">
+        <div style="font-size: 4rem;">??</div>
+        <h3>No Activities Yet</h3>
+        <p>Create your first activity to get started.</p>
+        <button class="btn btn-primary" @onclick="ShowCreateModal">Add Activity</button>
+    </div>
+}
+else
+{
+    <div class="row g-4">
+        @foreach (var activity in activities)
+        {
+            <div class="col-md-6 col-lg-4">
+                <div class="card h-100">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-start mb-2">
+                            <h5 class="card-title fw-bold mb-0">@activity.Name</h5>
+                            @if (!string.IsNullOrEmpty(activity.Category))
+                            {
+                                <span class="badge bg-secondary">@activity.Category</span>
+                            }
+                        </div>
+                        <p class="text-muted small mb-3">
+                            @(activity.Description ?? "No description")
+                        </p>
+                        <div class="text-muted small mb-3">
+                            Created: @activity.CreatedAt.ToString("MMM dd, yyyy")
+                        </div>
+                        <div class="d-flex gap-2">
+                            <button class="btn btn-outline-primary btn-sm flex-grow-1" @onclick="() => ShowEditModal(activity)">
+                                Edit
+                            </button>
+                            <button class="btn btn-outline-danger btn-sm" @onclick="() => ShowDeleteConfirmation(activity)">
+                                Delete
+                            </button>
                         </div>
                     </div>
                 </div>
-            }
-        </div>
-    }
-</div>
+            </div>
+        }
+    </div>
+}
 
 <!-- Create/Edit Modal -->
 @if (showModal)

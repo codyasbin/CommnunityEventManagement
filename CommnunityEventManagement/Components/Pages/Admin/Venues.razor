@@ -3,86 +3,85 @@
 @using CommnunityEventManagement.Services
 @using Microsoft.AspNetCore.Authorization
 @attribute [Authorize(Roles = "Admin")]
+@layout AdminLayout
 @inject IVenueService VenueService
 @rendermode InteractiveServer
 
 <PageTitle>Manage Venues - CEMS Admin</PageTitle>
 
-<div class="container py-4">
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <div>
-            <h1 class="fw-bold mb-1">??? Manage Venues</h1>
-            <p class="text-muted mb-0">Create and manage event venues</p>
-        </div>
-        <button class="btn btn-primary" @onclick="ShowCreateModal">
-            + Add Venue
-        </button>
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h2 class="fw-bold mb-1">?? Manage Venues</h2>
+        <p class="text-muted mb-0">Create and manage event venues</p>
     </div>
-
-    @if (!string.IsNullOrEmpty(message))
-    {
-        <div class="alert @(isSuccess ? "alert-success" : "alert-danger") alert-dismissible fade show">
-            @message
-            <button type="button" class="btn-close" @onclick="() => message = null"></button>
-        </div>
-    }
-
-    @if (isLoading)
-    {
-        <div class="loading-spinner">
-            <div class="spinner-border" role="status">
-                <span class="visually-hidden">Loading...</span>
-            </div>
-        </div>
-    }
-    else if (!venues.Any())
-    {
-        <div class="empty-state">
-            <div style="font-size: 4rem;">???</div>
-            <h3>No Venues Yet</h3>
-            <p>Create your first venue to get started.</p>
-            <button class="btn btn-primary" @onclick="ShowCreateModal">Add Venue</button>
-        </div>
-    }
-    else
-    {
-        <div class="table-responsive">
-            <table class="table table-hover bg-white rounded shadow-sm">
-                <thead>
-                    <tr>
-                        <th>Name</th>
-                        <th>Address</th>
-                        <th>Max Capacity</th>
-                        <th>Events</th>
-                        <th>Created</th>
-                        <th class="text-end">Actions</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @foreach (var venue in venues)
-                    {
-                        <tr>
-                            <td class="fw-medium">@venue.Name</td>
-                            <td>@venue.Address</td>
-                            <td>@venue.MaxCapacity</td>
-                            <td>@venue.Events.Count</td>
-                            <td>@venue.CreatedAt.ToString("MMM dd, yyyy")</td>
-                            <td class="text-end">
-                                <button class="btn btn-sm btn-outline-primary me-1" @onclick="() => ShowEditModal(venue)">
-                                    Edit
-                                </button>
-                                <button class="btn btn-sm btn-outline-danger" @onclick="() => ShowDeleteConfirmation(venue)" 
-                                        disabled="@(venue.Events.Any())">
-                                    Delete
-                                </button>
-                            </td>
-                        </tr>
-                    }
-                </tbody>
-            </table>
-        </div>
-    }
+    <button class="btn btn-primary" @onclick="ShowCreateModal">
+        + Add Venue
+    </button>
 </div>
+
+@if (!string.IsNullOrEmpty(message))
+{
+    <div class="alert @(isSuccess ? "alert-success" : "alert-danger") alert-dismissible fade show">
+        @message
+        <button type="button" class="btn-close" @onclick="() => message = null"></button>
+    </div>
+}
+
+@if (isLoading)
+{
+    <div class="loading-spinner">
+        <div class="spinner-border" role="status">
+            <span class="visually-hidden">Loading...</span>
+        </div>
+    </div>
+}
+else if (!venues.Any())
+{
+    <div class="empty-state">
+        <div style="font-size: 4rem;">???</div>
+        <h3>No Venues Yet</h3>
+        <p>Create your first venue to get started.</p>
+        <button class="btn btn-primary" @onclick="ShowCreateModal">Add Venue</button>
+    </div>
+}
+else
+{
+    <div class="table-responsive">
+        <table class="table table-hover bg-white rounded shadow-sm">
+            <thead>
+                <tr>
+                    <th>Name</th>
+                    <th>Address</th>
+                    <th>Max Capacity</th>
+                    <th>Events</th>
+                    <th>Created</th>
+                    <th class="text-end">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var venue in venues)
+                {
+                    <tr>
+                        <td class="fw-medium">@venue.Name</td>
+                        <td>@venue.Address</td>
+                        <td>@venue.MaxCapacity</td>
+                        <td>@venue.Events.Count</td>
+                        <td>@venue.CreatedAt.ToString("MMM dd, yyyy")</td>
+                        <td class="text-end">
+                            <button class="btn btn-sm btn-outline-primary me-1" @onclick="() => ShowEditModal(venue)">
+                                Edit
+                            </button>
+                            <button class="btn btn-sm btn-outline-danger" @onclick="() => ShowDeleteConfirmation(venue)" 
+                                    disabled="@(venue.Events.Any())">
+                                Delete
+                            </button>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+}
 
 <!-- Create/Edit Modal -->
 @if (showModal)

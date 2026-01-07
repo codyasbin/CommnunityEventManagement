@@ -1,0 +1,134 @@
+@inherits LayoutComponentBase
+
+<div class="participant-layout">
+    <!-- Top Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-light sticky-top">
+        <div class="container">
+            <a class="navbar-brand" href="/">
+                <span class="brand-icon">??</span>
+                <span class="brand-text">CEMS</span>
+            </a>
+            
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav me-auto">
+                    <li class="nav-item">
+                        <NavLink href="/" class="nav-link" Match="NavLinkMatch.All">
+                            Home
+                        </NavLink>
+                    </li>
+                    <li class="nav-item">
+                        <NavLink href="events" class="nav-link">
+                            Browse Events
+                        </NavLink>
+                    </li>
+                    <AuthorizeView>
+                        <Authorized>
+                            <li class="nav-item">
+                                <NavLink href="my-registrations" class="nav-link">
+                                    My Registrations
+                                </NavLink>
+                            </li>
+                        </Authorized>
+                    </AuthorizeView>
+                </ul>
+                
+                <div class="navbar-auth">
+                    <AuthorizeView Context="authContext">
+                        <Authorized>
+                            <div class="dropdown">
+                                <button class="btn btn-user dropdown-toggle" type="button" data-bs-toggle="dropdown">
+                                    <span class="user-avatar-small">??</span>
+                                    <span class="user-name-nav">@authContext.User.Identity?.Name</span>
+                                </button>
+                                <ul class="dropdown-menu dropdown-menu-end">
+                                    <li><a class="dropdown-item" href="Account/Manage">?? Account Settings</a></li>
+                                    <li><a class="dropdown-item" href="my-registrations">?? My Registrations</a></li>
+                                    <AuthorizeView Roles="Admin" Context="adminContext">
+                                        <Authorized>
+                                            <li><hr class="dropdown-divider"></li>
+                                            <li><a class="dropdown-item" href="admin">?? Admin Dashboard</a></li>
+                                        </Authorized>
+                                    </AuthorizeView>
+                                    <li><hr class="dropdown-divider"></li>
+                                    <li>
+                                        <form action="Account/Logout" method="post" class="dropdown-item-form">
+                                            <AntiforgeryToken />
+                                            <input type="hidden" name="ReturnUrl" value="/" />
+                                            <button type="submit" class="dropdown-item text-danger">
+                                                ?? Logout
+                                            </button>
+                                        </form>
+                                    </li>
+                                </ul>
+                            </div>
+                        </Authorized>
+                        <NotAuthorized>
+                            <a href="Account/Login" class="btn btn-outline-primary me-2">Login</a>
+                            <a href="Account/Register" class="btn btn-primary">Sign Up</a>
+                        </NotAuthorized>
+                    </AuthorizeView>
+                </div>
+            </div>
+        </div>
+    </nav>
+    
+    <!-- Main Content -->
+    <main class="participant-main">
+        @Body
+    </main>
+    
+    <!-- Footer -->
+    <footer class="participant-footer">
+        <div class="container">
+            <div class="row">
+                <div class="col-md-4 mb-4 mb-md-0">
+                    <div class="footer-brand">
+                        <span class="brand-icon">??</span>
+                        <span class="brand-text">CEMS</span>
+                    </div>
+                    <p class="footer-tagline">Community Event Management System</p>
+                    <p class="footer-desc">Discover and participate in amazing community events near you.</p>
+                </div>
+                <div class="col-md-2 mb-4 mb-md-0">
+                    <h6 class="footer-title">Quick Links</h6>
+                    <ul class="footer-links">
+                        <li><a href="/">Home</a></li>
+                        <li><a href="events">Browse Events</a></li>
+                        <li><a href="my-registrations">My Registrations</a></li>
+                    </ul>
+                </div>
+                <div class="col-md-2 mb-4 mb-md-0">
+                    <h6 class="footer-title">Account</h6>
+                    <ul class="footer-links">
+                        <li><a href="Account/Login">Login</a></li>
+                        <li><a href="Account/Register">Sign Up</a></li>
+                        <li><a href="Account/Manage">Settings</a></li>
+                    </ul>
+                </div>
+                <div class="col-md-4">
+                    <h6 class="footer-title">Stay Connected</h6>
+                    <p class="footer-desc">Join our community and never miss an event!</p>
+                    <div class="social-links">
+                        <a href="#" class="social-link">??</a>
+                        <a href="#" class="social-link">??</a>
+                        <a href="#" class="social-link">??</a>
+                    </div>
+                </div>
+            </div>
+            <hr class="footer-divider" />
+            <div class="footer-bottom">
+                <p>&copy; @DateTime.Now.Year Community Event Management System. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+</div>
+
+<div id="blazor-error-ui" data-nosnippet>
+    An unhandled error has occurred.
+    <a href="." class="reload">Reload</a>
+    <span class="dismiss">??</span>
+</div>

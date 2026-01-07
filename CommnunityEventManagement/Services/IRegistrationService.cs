@@ -4,6 +4,7 @@ namespace CommnunityEventManagement.Services
 {
     public interface IRegistrationService
     {
+        Task<List<Registration>> GetAllAsync();
         Task<Registration?> GetByIdAsync(int id);
         Task<List<Registration>> GetUserRegistrationsAsync(string userId);
         Task<List<Registration>> GetEventRegistrationsAsync(int eventId);

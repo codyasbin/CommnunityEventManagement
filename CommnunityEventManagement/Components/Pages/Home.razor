@@ -1,6 +1,7 @@
 ﻿@page "/"
 @using CommnunityEventManagement.Data.Models
 @using CommnunityEventManagement.Services
+@layout ParticipantLayout
 @inject IEventService EventService
 @inject NavigationManager NavigationManager
 
@@ -8,9 +9,9 @@
 
 <!-- Hero Section -->
 <div class="hero-section text-center">
-    <div class="container">
-        <h1 class="display-4 fw-bold mb-3">🎉 Welcome to CEMS</h1>
-        <p class="lead mb-4">Discover and join amazing community events happening near you</p>
+    <div class="container hero-content">
+        <h1 class="hero-title">🎉 Welcome to CEMS</h1>
+        <p class="hero-subtitle mb-4">Discover and join amazing community events happening near you</p>
         <div class="d-flex justify-content-center gap-3">
             <a href="events" class="btn btn-light btn-lg px-4">
                 Browse Events

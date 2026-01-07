@@ -13,6 +13,16 @@ namespace CommnunityEventManagement.Services
             _context = context;
         }
 
+        public async Task<List<Registration>> GetAllAsync()
+        {
+            return await _context.Registrations
+                .Include(r => r.Event)
+                    .ThenInclude(e => e.Venue)
+                .Include(r => r.User)
+                .OrderByDescending(r => r.RegistrationDate)
+                .ToListAsync();
+        }
+
         public async Task<Registration?> GetByIdAsync(int id)
         {
             return await _context.Registrations

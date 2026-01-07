@@ -4,6 +4,7 @@
 @using Microsoft.AspNetCore.Authorization
 @using System.ComponentModel.DataAnnotations
 @attribute [Authorize(Roles = "Admin")]
+@layout AdminLayout
 @inject IEventService EventService
 @inject IVenueService VenueService
 @inject IActivityService ActivityService
@@ -12,106 +13,104 @@
 
 <PageTitle>Manage Events - CEMS Admin</PageTitle>
 
-<div class="container py-4">
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <div>
-            <h1 class="fw-bold mb-1">?? Manage Events</h1>
-            <p class="text-muted mb-0">Create and manage community events</p>
-        </div>
-        <button class="btn btn-primary" @onclick="ShowCreateModal">
-            + Create Event
-        </button>
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h2 class="fw-bold mb-1">?? Manage Events</h2>
+        <p class="text-muted mb-0">Create and manage community events</p>
     </div>
-
-    @if (!string.IsNullOrEmpty(message))
-    {
-        <div class="alert @(isSuccess ? "alert-success" : "alert-danger") alert-dismissible fade show">
-            @message
-            <button type="button" class="btn-close" @onclick="() => message = null"></button>
-        </div>
-    }
-
-    @if (isLoading)
-    {
-        <div class="loading-spinner">
-            <div class="spinner-border" role="status">
-                <span class="visually-hidden">Loading...</span>
-            </div>
-        </div>
-    }
-    else if (!events.Any())
-    {
-        <div class="empty-state">
-            <div style="font-size: 4rem;">??</div>
-            <h3>No Events Yet</h3>
-            <p>Create your first event to get started.</p>
-            <button class="btn btn-primary" @onclick="ShowCreateModal">Create Event</button>
-        </div>
-    }
-    else
-    {
-        <div class="table-responsive">
-            <table class="table table-hover bg-white rounded shadow-sm">
-                <thead>
-                    <tr>
-                        <th>Event</th>
-                        <th>Date & Time</th>
-                        <th>Venue</th>
-                        <th>Capacity</th>
-                        <th>Registrations</th>
-                        <th>Status</th>
-                        <th class="text-end">Actions</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @foreach (var evt in events)
-                    {
-                        <tr>
-                            <td>
-                                <div class="fw-medium">@evt.Name</div>
-                                <div class="text-muted small">
-                                    @foreach (var ea in evt.EventActivities.Take(2))
-                                    {
-                                        <span class="activity-tag">@ea.Activity?.Name</span>
-                                    }
-                                </div>
-                            </td>
-                            <td>
-                                <div>@evt.EventDate.ToString("MMM dd, yyyy")</div>
-                                <div class="text-muted small">@evt.StartTime.ToString(@"hh\:mm")</div>
-                            </td>
-                            <td>@evt.Venue?.Name</td>
-                            <td>@evt.Capacity</td>
-                            <td>
-                                <div class="d-flex align-items-center gap-2">
-                                    <span>@evt.RegisteredCount / @evt.Capacity</span>
-                                    @if (evt.IsFull)
-                                    {
-                                        <span class="badge badge-full">Full</span>
-                                    }
-                                </div>
-                            </td>
-                            <td>
-                                <span class="badge badge-@evt.Status.ToString().ToLower()">@evt.Status</span>
-                            </td>
-                            <td class="text-end">
-                                <a href="events/@evt.Id" class="btn btn-sm btn-outline-secondary me-1">
-                                    View
-                                </a>
-                                <button class="btn btn-sm btn-outline-primary me-1" @onclick="() => ShowEditModal(evt)">
-                                    Edit
-                                </button>
-                                <button class="btn btn-sm btn-outline-danger" @onclick="() => ShowDeleteConfirmation(evt)">
-                                    Delete
-                                </button>
-                            </td>
-                        </tr>
-                    }
-                </tbody>
-            </table>
-        </div>
-    }
+    <button class="btn btn-primary" @onclick="ShowCreateModal">
+        + Create Event
+    </button>
 </div>
+
+@if (!string.IsNullOrEmpty(message))
+{
+    <div class="alert @(isSuccess ? "alert-success" : "alert-danger") alert-dismissible fade show">
+        @message
+        <button type="button" class="btn-close" @onclick="() => message = null"></button>
+    </div>
+}
+
+@if (isLoading)
+{
+    <div class="loading-spinner">
+        <div class="spinner-border" role="status">
+            <span class="visually-hidden">Loading...</span>
+        </div>
+    </div>
+}
+else if (!events.Any())
+{
+    <div class="empty-state">
+        <div style="font-size: 4rem;">???</div>
+        <h3>No Events Yet</h3>
+        <p>Create your first event to get started.</p>
+        <button class="btn btn-primary" @onclick="ShowCreateModal">Create Event</button>
+    </div>
+}
+else
+{
+    <div class="table-responsive">
+        <table class="table table-hover bg-white rounded shadow-sm">
+            <thead>
+                <tr>
+                    <th>Event</th>
+                    <th>Date & Time</th>
+                    <th>Venue</th>
+                    <th>Capacity</th>
+                    <th>Registrations</th>
+                    <th>Status</th>
+                    <th class="text-end">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var evt in events)
+                {
+                    <tr>
+                        <td>
+                            <div class="fw-medium">@evt.Name</div>
+                            <div class="text-muted small">
+                                @foreach (var ea in evt.EventActivities.Take(2))
+                                {
+                                    <span class="activity-tag">@ea.Activity?.Name</span>
+                                }
+                            </div>
+                        </td>
+                        <td>
+                            <div>@evt.EventDate.ToString("MMM dd, yyyy")</div>
+                            <div class="text-muted small">@evt.StartTime.ToString(@"hh\:mm")</div>
+                        </td>
+                        <td>@evt.Venue?.Name</td>
+                        <td>@evt.Capacity</td>
+                        <td>
+                            <div class="d-flex align-items-center gap-2">
+                                <span>@evt.RegisteredCount / @evt.Capacity</span>
+                                @if (evt.IsFull)
+                                {
+                                    <span class="badge badge-full">Full</span>
+                                }
+                            </div>
+                        </td>
+                        <td>
+                            <span class="badge badge-@evt.Status.ToString().ToLower()">@evt.Status</span>
+                        </td>
+                        <td class="text-end">
+                            <a href="events/@evt.Id" class="btn btn-sm btn-outline-secondary me-1">
+                                View
+                            </a>
+                            <button class="btn btn-sm btn-outline-primary me-1" @onclick="() => ShowEditModal(evt)">
+                                Edit
+                            </button>
+                            <button class="btn btn-sm btn-outline-danger" @onclick="() => ShowDeleteConfirmation(evt)">
+                                Delete
+                            </button>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+}
 
 <!-- Create/Edit Modal -->
 @if (showModal)

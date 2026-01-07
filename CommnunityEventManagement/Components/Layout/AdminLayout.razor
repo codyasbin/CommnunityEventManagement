@@ -1,0 +1,102 @@
+@inherits LayoutComponentBase
+@using Microsoft.AspNetCore.Authorization
+@attribute [Authorize(Roles = "Admin")]
+
+<div class="admin-layout">
+    <!-- Sidebar -->
+    <aside class="admin-sidebar">
+        <div class="sidebar-header">
+            <div class="logo">
+                <span class="logo-icon">??</span>
+                <span class="logo-text">CEMS Admin</span>
+            </div>
+        </div>
+        
+        <nav class="sidebar-nav">
+            <div class="nav-section">
+                <div class="nav-section-title">Dashboard</div>
+                <NavLink href="admin" class="nav-item" Match="NavLinkMatch.All">
+                    <span class="nav-icon">??</span>
+                    <span class="nav-text">Overview</span>
+                </NavLink>
+            </div>
+            
+            <div class="nav-section">
+                <div class="nav-section-title">Management</div>
+                <NavLink href="admin/events" class="nav-item">
+                    <span class="nav-icon">??</span>
+                    <span class="nav-text">Events</span>
+                </NavLink>
+                <NavLink href="admin/venues" class="nav-item">
+                    <span class="nav-icon">??</span>
+                    <span class="nav-text">Venues</span>
+                </NavLink>
+                <NavLink href="admin/activities" class="nav-item">
+                    <span class="nav-icon">??</span>
+                    <span class="nav-text">Activities</span>
+                </NavLink>
+                <NavLink href="admin/registrations" class="nav-item">
+                    <span class="nav-icon">??</span>
+                    <span class="nav-text">Registrations</span>
+                </NavLink>
+            </div>
+            
+            <div class="nav-section">
+                <div class="nav-section-title">Quick Links</div>
+                <NavLink href="/" class="nav-item">
+                    <span class="nav-icon">??</span>
+                    <span class="nav-text">View Site</span>
+                </NavLink>
+            </div>
+        </nav>
+        
+        <div class="sidebar-footer">
+            <AuthorizeView>
+                <Authorized>
+                    <div class="user-info">
+                        <div class="user-avatar">??</div>
+                        <div class="user-details">
+                            <div class="user-name">@context.User.Identity?.Name</div>
+                            <div class="user-role">Administrator</div>
+                        </div>
+                    </div>
+                    <form action="Account/Logout" method="post" class="logout-form">
+                        <AntiforgeryToken />
+                        <input type="hidden" name="ReturnUrl" value="/" />
+                        <button type="submit" class="btn-logout">
+                            ?? Logout
+                        </button>
+                    </form>
+                </Authorized>
+            </AuthorizeView>
+        </div>
+    </aside>
+    
+    <!-- Main Content -->
+    <main class="admin-main">
+        <header class="admin-header">
+            <div class="header-left">
+                <button class="btn-menu d-lg-none" @onclick="ToggleSidebar">
+                    ?
+                </button>
+                <h1 class="page-title">Admin Dashboard</h1>
+            </div>
+            <div class="header-right">
+                <span class="header-date">@DateTime.Now.ToString("dddd, MMMM dd, yyyy")</span>
+            </div>
+        </header>
+        
+        <div class="admin-content">
+            @Body
+        </div>
+    </main>
+</div>
+
+@code {
+    private bool sidebarOpen = true;
+    
+    private void ToggleSidebar()
+    {
+        sidebarOpen = !sidebarOpen;
+    }
+}

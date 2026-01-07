@@ -1,0 +1,205 @@
+@page "/admin"
+@using CommnunityEventManagement.Data.Models
+@using CommnunityEventManagement.Services
+@using Microsoft.AspNetCore.Authorization
+@attribute [Authorize(Roles = "Admin")]
+@layout AdminLayout
+@inject IEventService EventService
+@inject IVenueService VenueService
+@inject IActivityService ActivityService
+@inject IRegistrationService RegistrationService
+@rendermode InteractiveServer
+
+<PageTitle>Admin Dashboard - CEMS</PageTitle>
+
+<div class="admin-dashboard">
+    <!-- Stats Cards -->
+    <div class="admin-stats">
+        <div class="stat-card">
+            <div class="stat-icon events">??</div>
+            <div class="stat-info">
+                <h3>@totalEvents</h3>
+                <p>Total Events</p>
+            </div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-icon venues">??</div>
+            <div class="stat-info">
+                <h3>@totalVenues</h3>
+                <p>Venues</p>
+            </div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-icon activities">??</div>
+            <div class="stat-info">
+                <h3>@totalActivities</h3>
+                <p>Activities</p>
+            </div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-icon registrations">??</div>
+            <div class="stat-info">
+                <h3>@totalRegistrations</h3>
+                <p>Registrations</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="row g-4">
+        <!-- Upcoming Events -->
+        <div class="col-lg-8">
+            <div class="admin-table-card">
+                <div class="admin-table-header">
+                    <h2>?? Upcoming Events</h2>
+                    <a href="admin/events" class="btn btn-sm btn-primary">Manage Events</a>
+                </div>
+                <div class="table-responsive">
+                    @if (upcomingEvents.Any())
+                    {
+                        <table class="table table-hover mb-0">
+                            <thead>
+                                <tr>
+                                    <th>Event</th>
+                                    <th>Date</th>
+                                    <th>Venue</th>
+                                    <th>Registrations</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var evt in upcomingEvents.Take(5))
+                                {
+                                    <tr>
+                                        <td>
+                                            <div class="fw-medium">@evt.Name</div>
+                                        </td>
+                                        <td>@evt.EventDate.ToString("MMM dd, yyyy")</td>
+                                        <td>@evt.Venue?.Name</td>
+                                        <td>
+                                            <div class="d-flex align-items-center gap-2">
+                                                <div class="progress flex-grow-1" style="height: 6px; width: 80px;">
+                                                    @{
+                                                        var pct = evt.Capacity > 0 ? (evt.RegisteredCount * 100 / evt.Capacity) : 0;
+                                                        var barColor = pct < 50 ? "#43e97b" : pct < 80 ? "#ffc107" : "#dc3545";
+                                                    }
+                                                    <div class="progress-bar" style="width: @pct%; background-color: @barColor;"></div>
+                                                </div>
+                                                <span class="small text-muted">@evt.RegisteredCount/@evt.Capacity</span>
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <span class="badge bg-success">@evt.Status</span>
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    }
+                    else
+                    {
+                        <div class="p-4 text-center text-muted">
+                            <p class="mb-0">No upcoming events. <a href="admin/events">Create one now!</a></p>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+
+        <!-- Quick Actions -->
+        <div class="col-lg-4">
+            <div class="admin-table-card">
+                <div class="admin-table-header">
+                    <h2>? Quick Actions</h2>
+                </div>
+                <div class="p-3">
+                    <div class="d-grid gap-2">
+                        <a href="admin/events" class="btn btn-outline-primary text-start">
+                            <span class="me-2">??</span> Create New Event
+                        </a>
+                        <a href="admin/venues" class="btn btn-outline-primary text-start">
+                            <span class="me-2">??</span> Add New Venue
+                        </a>
+                        <a href="admin/activities" class="btn btn-outline-primary text-start">
+                            <span class="me-2">??</span> Add New Activity
+                        </a>
+                        <a href="admin/registrations" class="btn btn-outline-primary text-start">
+                            <span class="me-2">??</span> View All Registrations
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <div class="admin-table-card mt-4">
+                <div class="admin-table-header">
+                    <h2>?? Recent Registrations</h2>
+                </div>
+                <div class="p-3">
+                    @if (recentRegistrations.Any())
+                    {
+                        @foreach (var reg in recentRegistrations.Take(5))
+                        {
+                            <div class="d-flex align-items-center gap-3 py-2 border-bottom">
+                                <div class="flex-shrink-0">
+                                    <div class="avatar-circle">??</div>
+                                </div>
+                                <div class="flex-grow-1 min-width-0">
+                                    <div class="fw-medium text-truncate">@reg.User?.FullName</div>
+                                    <div class="text-muted small text-truncate">@reg.Event?.Name</div>
+                                </div>
+                                <div class="flex-shrink-0">
+                                    <span class="badge badge-@reg.Status.ToString().ToLower()">@reg.Status</span>
+                                </div>
+                            </div>
+                        }
+                    }
+                    else
+                    {
+                        <p class="text-muted text-center mb-0">No recent registrations.</p>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .avatar-circle {
+        width: 36px;
+        height: 36px;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1rem;
+    }
+    
+    .min-width-0 {
+        min-width: 0;
+    }
+</style>
+
+@code {
+    private int totalEvents = 0;
+    private int totalVenues = 0;
+    private int totalActivities = 0;
+    private int totalRegistrations = 0;
+    private List<Event> upcomingEvents = new();
+    private List<Registration> recentRegistrations = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        var events = await EventService.GetAllAsync();
+        var venues = await VenueService.GetAllAsync();
+        var activities = await ActivityService.GetAllAsync();
+        var registrations = await RegistrationService.GetAllAsync();
+
+        totalEvents = events.Count;
+        totalVenues = venues.Count;
+        totalActivities = activities.Count;
+        totalRegistrations = registrations.Count;
+
+        upcomingEvents = await EventService.GetUpcomingEventsAsync();
+        recentRegistrations = registrations.OrderByDescending(r => r.RegistrationDate).Take(5).ToList();
+    }
+}

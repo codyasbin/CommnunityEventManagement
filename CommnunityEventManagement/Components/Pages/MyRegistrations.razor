@@ -3,6 +3,7 @@
 @using CommnunityEventManagement.Services
 @using Microsoft.AspNetCore.Authorization
 @attribute [Authorize]
+@layout ParticipantLayout
 @inject IRegistrationService RegistrationService
 @inject AuthenticationStateProvider AuthStateProvider
 @inject NavigationManager NavigationManager

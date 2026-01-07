@@ -1,6 +1,7 @@
 @page "/events"
 @using CommnunityEventManagement.Data.Models
 @using CommnunityEventManagement.Services
+@layout ParticipantLayout
 @inject IEventService EventService
 @inject IVenueService VenueService
 @inject IActivityService ActivityService
@@ -9,54 +10,57 @@
 
 <PageTitle>Browse Events - CEMS</PageTitle>
 
-<div class="container py-4">
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <div>
-            <h1 class="fw-bold mb-1">?? Browse Events</h1>
-            <p class="text-muted mb-0">Discover community events and register to participate</p>
-        </div>
+<!-- Hero Section -->
+<div class="hero-section">
+    <div class="container hero-content">
+        <h1 class="hero-title">?? Browse Events</h1>
+        <p class="hero-subtitle">Discover community events and register to participate</p>
     </div>
+</div>
 
+<div class="container py-4" style="margin-top: -2rem; position: relative; z-index: 10;">
     <!-- Filter Section -->
-    <div class="filter-section">
-        <div class="row g-3">
-            <div class="col-md-3">
-                <label class="form-label">Search</label>
-                <input type="text" class="form-control" placeholder="Search events..." 
-                       @bind="filter.SearchTerm" @bind:event="oninput" @bind:after="OnFilterChange" />
-            </div>
-            <div class="col-md-2">
-                <label class="form-label">From Date</label>
-                <input type="date" class="form-control" @bind="filter.FromDate" @bind:after="OnFilterChange" />
-            </div>
-            <div class="col-md-2">
-                <label class="form-label">To Date</label>
-                <input type="date" class="form-control" @bind="filter.ToDate" @bind:after="OnFilterChange" />
-            </div>
-            <div class="col-md-2">
-                <label class="form-label">Venue</label>
-                <select class="form-select" @bind="filter.VenueId" @bind:after="OnFilterChange">
-                    <option value="">All Venues</option>
-                    @foreach (var venue in venues)
-                    {
-                        <option value="@venue.Id">@venue.Name</option>
-                    }
-                </select>
-            </div>
-            <div class="col-md-2">
-                <label class="form-label">Activity</label>
-                <select class="form-select" @bind="filter.ActivityId" @bind:after="OnFilterChange">
-                    <option value="">All Activities</option>
-                    @foreach (var activity in activities)
-                    {
-                        <option value="@activity.Id">@activity.Name</option>
-                    }
-                </select>
-            </div>
-            <div class="col-md-1 d-flex align-items-end">
-                <button class="btn btn-outline-secondary w-100" @onclick="ClearFilters">
-                    Clear
-                </button>
+    <div class="card mb-4">
+        <div class="card-body">
+            <div class="row g-3">
+                <div class="col-md-3">
+                    <label class="form-label">Search</label>
+                    <input type="text" class="form-control" placeholder="Search events..." 
+                           @bind="filter.SearchTerm" @bind:event="oninput" @bind:after="OnFilterChange" />
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label">From Date</label>
+                    <input type="date" class="form-control" @bind="filter.FromDate" @bind:after="OnFilterChange" />
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label">To Date</label>
+                    <input type="date" class="form-control" @bind="filter.ToDate" @bind:after="OnFilterChange" />
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label">Venue</label>
+                    <select class="form-select" @bind="filter.VenueId" @bind:after="OnFilterChange">
+                        <option value="">All Venues</option>
+                        @foreach (var venue in venues)
+                        {
+                            <option value="@venue.Id">@venue.Name</option>
+                        }
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label">Activity</label>
+                    <select class="form-select" @bind="filter.ActivityId" @bind:after="OnFilterChange">
+                        <option value="">All Activities</option>
+                        @foreach (var activity in activities)
+                        {
+                            <option value="@activity.Id">@activity.Name</option>
+                        }
+                    </select>
+                </div>
+                <div class="col-md-1 d-flex align-items-end">
+                    <button class="btn btn-outline-secondary w-100" @onclick="ClearFilters">
+                        Clear
+                    </button>
+                </div>
             </div>
         </div>
     </div>
@@ -64,18 +68,18 @@
     <!-- Events List -->
     @if (isLoading)
     {
-        <div class="loading-spinner">
-            <div class="spinner-border" role="status">
+        <div class="text-center py-5">
+            <div class="spinner-border text-primary" role="status">
                 <span class="visually-hidden">Loading...</span>
             </div>
         </div>
     }
     else if (!events.Any())
     {
-        <div class="empty-state">
+        <div class="text-center py-5">
             <div style="font-size: 4rem;">??</div>
             <h3>No Events Found</h3>
-            <p>Try adjusting your filters or check back later for new events.</p>
+            <p class="text-muted">Try adjusting your filters or check back later for new events.</p>
         </div>
     }
     else
@@ -92,51 +96,46 @@
                             <div class="day">@evt.EventDate.Day</div>
                             <div class="month">@evt.EventDate.ToString("MMM")</div>
                         </div>
-                        <div class="event-content">
+                        <div class="event-content p-3">
                             <div class="d-flex justify-content-between align-items-start mb-2">
                                 <h5 class="event-title mb-0">@evt.Name</h5>
                                 @if (evt.IsFull)
                                 {
-                                    <span class="badge badge-full">Full</span>
+                                    <span class="badge bg-danger">Full</span>
                                 }
                                 else
                                 {
-                                    <span class="badge badge-@evt.Status.ToString().ToLower()">@evt.Status</span>
+                                    <span class="badge bg-success">@evt.Status</span>
                                 }
                             </div>
                             <p class="text-muted small mb-3">
                                 @(evt.Description.Length > 100 ? evt.Description[..100] + "..." : evt.Description)
                             </p>
-                            <div class="event-meta mb-2">
-                                <div class="mb-1">
-                                    <span>??</span> @evt.Venue?.Name
-                                </div>
-                                <div class="mb-1">
-                                    <span>??</span> @evt.StartTime.ToString(@"hh\:mm") 
+                            <div class="small text-muted mb-2">
+                                <div class="mb-1">?? @evt.Venue?.Name</div>
+                                <div class="mb-1">?? @evt.StartTime.ToString(@"hh\:mm") 
                                     @if (evt.EndTime.HasValue)
                                     {
                                         <span>- @evt.EndTime.Value.ToString(@"hh\:mm")</span>
                                     }
                                 </div>
-                                <div>
-                                    <span>??</span> @evt.AvailableSpots / @evt.Capacity spots left
-                                </div>
+                                <div>?? @evt.AvailableSpots / @evt.Capacity spots left</div>
                             </div>
-                            <div class="capacity-bar mb-3">
+                            <div class="progress mb-3" style="height: 6px;">
                                 @{
                                     var percentage = evt.Capacity > 0 ? (evt.RegisteredCount * 100 / evt.Capacity) : 0;
-                                    var progressClass = percentage < 50 ? "low" : percentage < 80 ? "medium" : "high";
+                                    var barColor = percentage < 50 ? "#43e97b" : percentage < 80 ? "#ffc107" : "#dc3545";
                                 }
-                                <div class="progress @progressClass" style="width: @percentage%"></div>
+                                <div class="progress-bar" style="width: @percentage%; background-color: @barColor;"></div>
                             </div>
                             <div class="d-flex flex-wrap gap-1 mb-3">
                                 @foreach (var activity in evt.EventActivities.Take(3))
                                 {
-                                    <span class="activity-tag">@activity.Activity?.Name</span>
+                                    <span class="badge bg-light text-dark">@activity.Activity?.Name</span>
                                 }
                                 @if (evt.EventActivities.Count > 3)
                                 {
-                                    <span class="activity-tag">+@(evt.EventActivities.Count - 3) more</span>
+                                    <span class="badge bg-light text-dark">+@(evt.EventActivities.Count - 3) more</span>
                                 }
                             </div>
                             <a href="events/@evt.Id" class="btn btn-primary w-100">
