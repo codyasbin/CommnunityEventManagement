@@ -2,6 +2,7 @@
 @using CommnunityEventManagement.Data.Models
 @using CommnunityEventManagement.Services
 @using Microsoft.AspNetCore.Authorization
+@using System.ComponentModel.DataAnnotations
 @attribute [Authorize(Roles = "Admin")]
 @inject IEventService EventService
 @inject IVenueService VenueService
@@ -122,18 +123,18 @@
                     <h5 class="modal-title">@(isEditing ? "Edit Event" : "Create Event")</h5>
                     <button type="button" class="btn-close" @onclick="CloseModal"></button>
                 </div>
-                <EditForm Model="currentEvent" OnValidSubmit="SaveEvent">
+                <EditForm Model="formModel" OnValidSubmit="SaveEvent" FormName="eventForm">
                     <DataAnnotationsValidator />
                     <div class="modal-body">
                         <div class="row">
                             <div class="col-md-8 mb-3">
                                 <label class="form-label">Event Name *</label>
-                                <InputText class="form-control" @bind-Value="currentEvent.Name" />
-                                <ValidationMessage For="@(() => currentEvent.Name)" class="text-danger" />
+                                <InputText class="form-control" @bind-Value="formModel.Name" />
+                                <ValidationMessage For="@(() => formModel.Name)" class="text-danger" />
                             </div>
                             <div class="col-md-4 mb-3">
                                 <label class="form-label">Status</label>
-                                <InputSelect class="form-select" @bind-Value="currentEvent.Status">
+                                <InputSelect class="form-select" @bind-Value="formModel.Status">
                                     @foreach (var status in Enum.GetValues<EventStatus>())
                                     {
                                         <option value="@status">@status</option>
@@ -144,42 +145,42 @@
                         
                         <div class="mb-3">
                             <label class="form-label">Description *</label>
-                            <InputTextArea class="form-control" @bind-Value="currentEvent.Description" rows="3" />
-                            <ValidationMessage For="@(() => currentEvent.Description)" class="text-danger" />
+                            <InputTextArea class="form-control" @bind-Value="formModel.Description" rows="3" />
+                            <ValidationMessage For="@(() => formModel.Description)" class="text-danger" />
                         </div>
 
                         <div class="row">
                             <div class="col-md-4 mb-3">
                                 <label class="form-label">Event Date *</label>
-                                <InputDate class="form-control" @bind-Value="currentEvent.EventDate" />
-                                <ValidationMessage For="@(() => currentEvent.EventDate)" class="text-danger" />
+                                <InputDate class="form-control" @bind-Value="formModel.EventDate" />
+                                <ValidationMessage For="@(() => formModel.EventDate)" class="text-danger" />
                             </div>
                             <div class="col-md-4 mb-3">
                                 <label class="form-label">Start Time *</label>
-                                <input type="time" class="form-control" @bind="startTimeString" />
+                                <input type="text" class="form-control" @bind="startTimeString" placeholder="09:00" />
                             </div>
                             <div class="col-md-4 mb-3">
                                 <label class="form-label">End Time</label>
-                                <input type="time" class="form-control" @bind="endTimeString" />
+                                <input type="text" class="form-control" @bind="endTimeString" placeholder="17:00" />
                             </div>
                         </div>
 
                         <div class="row">
                             <div class="col-md-8 mb-3">
                                 <label class="form-label">Venue *</label>
-                                <InputSelect class="form-select" @bind-Value="currentEvent.VenueId">
+                                <InputSelect class="form-select" @bind-Value="formModel.VenueId">
                                     <option value="0">Select a venue...</option>
                                     @foreach (var venue in venues)
                                     {
                                         <option value="@venue.Id">@venue.Name (Capacity: @venue.MaxCapacity)</option>
                                     }
                                 </InputSelect>
-                                <ValidationMessage For="@(() => currentEvent.VenueId)" class="text-danger" />
+                                <ValidationMessage For="@(() => formModel.VenueId)" class="text-danger" />
                             </div>
                             <div class="col-md-4 mb-3">
                                 <label class="form-label">Event Capacity *</label>
-                                <InputNumber class="form-control" @bind-Value="currentEvent.Capacity" />
-                                <ValidationMessage For="@(() => currentEvent.Capacity)" class="text-danger" />
+                                <InputNumber class="form-control" @bind-Value="formModel.Capacity" />
+                                <ValidationMessage For="@(() => formModel.Capacity)" class="text-danger" />
                             </div>
                         </div>
 
@@ -210,7 +211,7 @@
 
                         <div class="mb-3">
                             <label class="form-label">Image URL (optional)</label>
-                            <InputText class="form-control" @bind-Value="currentEvent.ImageUrl" placeholder="https://..." />
+                            <InputText class="form-control" @bind-Value="formModel.ImageUrl" placeholder="https://..." />
                         </div>
                     </div>
                     <div class="modal-footer">
@@ -268,7 +269,7 @@
     private List<Venue> venues = new();
     private List<Activity> allActivities = new();
     private List<int> selectedActivityIds = new();
-    private Event currentEvent = new() { EventDate = DateTime.Today.AddDays(7) };
+    private EventFormModel formModel = new();
     private Event? eventToDelete;
     private bool isLoading = true;
     private bool showModal = false;
@@ -302,32 +303,34 @@
 
     private void ShowCreateModal()
     {
-        currentEvent = new Event { EventDate = DateTime.Today.AddDays(7), Capacity = 50 };
-        selectedActivityIds = new List<int>();
+        formModel = new EventFormModel
+        {
+            EventDate = DateTime.Today.AddDays(7),
+            Capacity = 50
+        };
         startTimeString = "09:00";
         endTimeString = "17:00";
+        selectedActivityIds = new List<int>();
         isEditing = false;
         showModal = true;
     }
 
     private void ShowEditModal(Event evt)
     {
-        currentEvent = new Event
+        formModel = new EventFormModel
         {
             Id = evt.Id,
             Name = evt.Name,
             Description = evt.Description,
             EventDate = evt.EventDate,
-            StartTime = evt.StartTime,
-            EndTime = evt.EndTime,
             Capacity = evt.Capacity,
             Status = evt.Status,
             VenueId = evt.VenueId,
             ImageUrl = evt.ImageUrl
         };
-        selectedActivityIds = evt.EventActivities.Select(ea => ea.ActivityId).ToList();
         startTimeString = evt.StartTime.ToString(@"hh\:mm");
         endTimeString = evt.EndTime?.ToString(@"hh\:mm") ?? "";
+        selectedActivityIds = evt.EventActivities.Select(ea => ea.ActivityId).ToList();
         isEditing = true;
         showModal = true;
     }
@@ -335,7 +338,7 @@
     private void CloseModal()
     {
         showModal = false;
-        currentEvent = new Event { EventDate = DateTime.Today.AddDays(7) };
+        formModel = new EventFormModel();
         selectedActivityIds = new List<int>();
     }
 
@@ -356,28 +359,36 @@
         isSaving = true;
         try
         {
+            var evt = new Event
+            {
+                Id = formModel.Id,
+                Name = formModel.Name,
+                Description = formModel.Description,
+                EventDate = formModel.EventDate,
+                Capacity = formModel.Capacity,
+                Status = formModel.Status,
+                VenueId = formModel.VenueId,
+                ImageUrl = formModel.ImageUrl
+            };
+
             // Parse time strings
             if (TimeSpan.TryParse(startTimeString, out var startTime))
             {
-                currentEvent.StartTime = startTime;
+                evt.StartTime = startTime;
             }
             if (!string.IsNullOrEmpty(endTimeString) && TimeSpan.TryParse(endTimeString, out var endTime))
             {
-                currentEvent.EndTime = endTime;
-            }
-            else
-            {
-                currentEvent.EndTime = null;
+                evt.EndTime = endTime;
             }
 
             if (isEditing)
             {
-                await EventService.UpdateAsync(currentEvent, selectedActivityIds);
+                await EventService.UpdateAsync(evt, selectedActivityIds);
                 message = "Event updated successfully.";
             }
             else
             {
-                await EventService.CreateAsync(currentEvent, selectedActivityIds);
+                await EventService.CreateAsync(evt, selectedActivityIds);
                 message = "Event created successfully.";
             }
             isSuccess = true;
@@ -422,5 +433,33 @@
         {
             isDeleting = false;
         }
+    }
+
+    private class EventFormModel
+    {
+        public int Id { get; set; }
+
+        [Required]
+        [StringLength(200)]
+        public string Name { get; set; } = string.Empty;
+
+        [Required]
+        [StringLength(2000)]
+        public string Description { get; set; } = string.Empty;
+
+        [Required]
+        public DateTime EventDate { get; set; } = DateTime.Today;
+
+        [Required]
+        [Range(1, int.MaxValue, ErrorMessage = "Capacity must be at least 1")]
+        public int Capacity { get; set; }
+
+        public EventStatus Status { get; set; } = EventStatus.Upcoming;
+
+        [Required]
+        [Range(1, int.MaxValue, ErrorMessage = "Please select a venue")]
+        public int VenueId { get; set; }
+
+        public string? ImageUrl { get; set; }
     }
 }

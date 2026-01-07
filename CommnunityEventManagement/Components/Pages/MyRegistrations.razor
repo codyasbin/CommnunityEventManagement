@@ -48,16 +48,11 @@
     }
     else
     {
-        @{
-            var upcomingRegs = registrations.Where(r => r.Event.EventDate >= DateTime.UtcNow.Date && r.Status == RegistrationStatus.Confirmed).ToList();
-            var pastRegs = registrations.Where(r => r.Event.EventDate < DateTime.UtcNow.Date || r.Status != RegistrationStatus.Confirmed).ToList();
-        }
-
-        @if (upcomingRegs.Any())
+        @if (UpcomingRegistrations.Any())
         {
             <h4 class="fw-bold mb-3">?? Upcoming Events</h4>
             <div class="row g-4 mb-5">
-                @foreach (var reg in upcomingRegs)
+                @foreach (var reg in UpcomingRegistrations)
                 {
                     <div class="col-md-6 col-lg-4">
                         <div class="card h-100">
@@ -69,13 +64,13 @@
                                 
                                 <div class="text-muted small mb-3">
                                     <div class="mb-1">
-                                        <span>??</span> @reg.Event.EventDate.ToString("dddd, MMM dd, yyyy")
+                                        ?? @reg.Event.EventDate.ToString("dddd, MMM dd, yyyy")
                                     </div>
                                     <div class="mb-1">
-                                        <span>??</span> @reg.Event.StartTime.ToString(@"hh\:mm")
+                                        ?? @reg.Event.StartTime.ToString(@"hh\:mm")
                                     </div>
                                     <div>
-                                        <span>??</span> @reg.Event.Venue?.Name
+                                        ?? @reg.Event.Venue?.Name
                                     </div>
                                 </div>
 
@@ -106,7 +101,7 @@
             </div>
         }
 
-        @if (pastRegs.Any())
+        @if (PastRegistrations.Any())
         {
             <h4 class="fw-bold mb-3">?? Past & Cancelled</h4>
             <div class="table-responsive">
@@ -122,7 +117,7 @@
                         </tr>
                     </thead>
                     <tbody>
-                        @foreach (var reg in pastRegs)
+                        @foreach (var reg in PastRegistrations)
                         {
                             <tr>
                                 <td class="fw-medium">@reg.Event.Name</td>
@@ -184,6 +179,12 @@
     private bool isSuccess = false;
     private Registration? registrationToCancel;
     private bool isCancelling = false;
+
+    private IEnumerable<Registration> UpcomingRegistrations => 
+        registrations.Where(r => r.Event.EventDate >= DateTime.UtcNow.Date && r.Status == RegistrationStatus.Confirmed);
+
+    private IEnumerable<Registration> PastRegistrations => 
+        registrations.Where(r => r.Event.EventDate < DateTime.UtcNow.Date || r.Status != RegistrationStatus.Confirmed);
 
     protected override async Task OnInitializedAsync()
     {
