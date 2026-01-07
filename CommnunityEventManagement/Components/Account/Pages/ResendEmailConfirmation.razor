@@ -1,4 +1,5 @@
 ﻿@page "/Account/ResendEmailConfirmation"
+@layout AuthLayout
 
 @using System.ComponentModel.DataAnnotations
 @using System.Text
@@ -12,25 +13,38 @@
 @inject NavigationManager NavigationManager
 @inject IdentityRedirectManager RedirectManager
 
-<PageTitle>Resend email confirmation</PageTitle>
+<PageTitle>Resend Email Confirmation - CEMS</PageTitle>
 
-<h1>Resend email confirmation</h1>
-<h2>Enter your email.</h2>
-<hr />
-<StatusMessage Message="@message" />
-<div class="row">
-    <div class="col-md-4">
-        <EditForm Model="Input" FormName="resend-email-confirmation" OnValidSubmit="OnValidSubmitAsync" method="post">
-            <DataAnnotationsValidator />
-            <ValidationSummary class="text-danger" role="alert" />
-            <div class="form-floating mb-3">
-                <InputText @bind-Value="Input.Email" id="Input.Email" class="form-control" aria-required="true" placeholder="name@example.com" />
-                <label for="Input.Email" class="form-label">Email</label>
-                <ValidationMessage For="() => Input.Email" class="text-danger" />
-            </div>
-            <button type="submit" class="w-100 btn btn-lg btn-primary">Resend</button>
-        </EditForm>
+<div class="auth-card">
+    <div class="auth-card-header">
+        <h1>Resend Confirmation</h1>
+        <p>Enter your email to receive a new confirmation link</p>
     </div>
+    
+    <StatusMessage Message="@message" />
+    
+    <EditForm Model="Input" FormName="resend-email-confirmation" OnValidSubmit="OnValidSubmitAsync" method="post">
+        <DataAnnotationsValidator />
+        <ValidationSummary class="text-danger mb-3" role="alert" />
+        
+        <div class="mb-4">
+            <label class="form-label">Email Address</label>
+            <InputText @bind-Value="Input.Email" class="form-control" placeholder="you@example.com" />
+            <ValidationMessage For="() => Input.Email" class="text-danger" />
+        </div>
+        
+        <button type="submit" class="btn btn-primary w-100 btn-lg mb-3">
+            Resend Confirmation Email
+        </button>
+        
+        <div class="auth-divider">
+            <span>or</span>
+        </div>
+        
+        <a href="Account/Login" class="btn btn-outline-secondary w-100">
+            &#x2190; Back to Login
+        </a>
+    </EditForm>
 </div>
 
 @code {

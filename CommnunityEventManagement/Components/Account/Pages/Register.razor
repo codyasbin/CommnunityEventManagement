@@ -1,4 +1,5 @@
 ﻿@page "/Account/Register"
+@layout AuthLayout
 
 @using System.ComponentModel.DataAnnotations
 @using System.Text
@@ -6,6 +7,7 @@
 @using Microsoft.AspNetCore.Identity
 @using Microsoft.AspNetCore.WebUtilities
 @using CommnunityEventManagement.Data
+@using CommnunityEventManagement.Components.Layout
 
 @inject UserManager<ApplicationUser> UserManager
 @inject IUserStore<ApplicationUser> UserStore
@@ -17,66 +19,68 @@
 
 <PageTitle>Register - CEMS</PageTitle>
 
-<div class="container py-5">
-    <div class="row justify-content-center">
-        <div class="col-md-6 col-lg-5">
-            <div class="card shadow">
-                <div class="card-body p-4">
-                    <div class="text-center mb-4">
-                        <h1 class="fw-bold" style="color: var(--primary-color);">🎉 Join CEMS</h1>
-                        <p class="text-muted">Create your account to start registering for events</p>
-                    </div>
-                    
-                    <StatusMessage Message="@Message" />
-                    
-                    <EditForm Model="Input" method="post" OnValidSubmit="RegisterUser" FormName="register">
-                        <DataAnnotationsValidator />
-                        <ValidationSummary class="text-danger" role="alert" />
-                        
-                        <div class="row">
-                            <div class="col-md-6 mb-3">
-                                <label class="form-label">First Name *</label>
-                                <InputText @bind-Value="Input.FirstName" class="form-control" placeholder="John" />
-                                <ValidationMessage For="() => Input.FirstName" class="text-danger" />
-                            </div>
-                            <div class="col-md-6 mb-3">
-                                <label class="form-label">Last Name *</label>
-                                <InputText @bind-Value="Input.LastName" class="form-control" placeholder="Doe" />
-                                <ValidationMessage For="() => Input.LastName" class="text-danger" />
-                            </div>
-                        </div>
-                        
-                        <div class="mb-3">
-                            <label class="form-label">Email Address *</label>
-                            <InputText @bind-Value="Input.Email" class="form-control" autocomplete="username" placeholder="you@example.com" />
-                            <ValidationMessage For="() => Input.Email" class="text-danger" />
-                        </div>
-                        
-                        <div class="mb-3">
-                            <label class="form-label">Password *</label>
-                            <InputText type="password" @bind-Value="Input.Password" class="form-control" autocomplete="new-password" placeholder="••••••••" />
-                            <ValidationMessage For="() => Input.Password" class="text-danger" />
-                            <div class="form-text">At least 6 characters with uppercase, lowercase, and a digit.</div>
-                        </div>
-                        
-                        <div class="mb-4">
-                            <label class="form-label">Confirm Password *</label>
-                            <InputText type="password" @bind-Value="Input.ConfirmPassword" class="form-control" autocomplete="new-password" placeholder="••••••••" />
-                            <ValidationMessage For="() => Input.ConfirmPassword" class="text-danger" />
-                        </div>
-                        
-                        <button type="submit" class="btn btn-primary w-100 btn-lg mb-3">
-                            Create Account
-                        </button>
-                        
-                        <div class="text-center">
-                            <span class="text-muted">Already have an account?</span>
-                            <a href="Account/Login" class="text-decoration-none">Sign in</a>
-                        </div>
-                    </EditForm>
-                </div>
+<div class="auth-card">
+    <div class="auth-card-header">
+        <h1>Create Account</h1>
+        <p>Join CEMS to discover and register for events</p>
+    </div>
+    
+    <StatusMessage Message="@Message" />
+    
+    <EditForm Model="Input" method="post" OnValidSubmit="RegisterUser" FormName="register">
+        <DataAnnotationsValidator />
+        <ValidationSummary class="text-danger mb-3" role="alert" />
+        
+        <div class="row">
+            <div class="col-6 mb-3">
+                <label class="form-label">First Name</label>
+                <InputText @bind-Value="Input.FirstName" class="form-control" placeholder="John" />
+                <ValidationMessage For="() => Input.FirstName" class="text-danger" />
+            </div>
+            <div class="col-6 mb-3">
+                <label class="form-label">Last Name</label>
+                <InputText @bind-Value="Input.LastName" class="form-control" placeholder="Doe" />
+                <ValidationMessage For="() => Input.LastName" class="text-danger" />
             </div>
         </div>
+        
+        <div class="mb-3">
+            <label class="form-label">Email Address</label>
+            <InputText @bind-Value="Input.Email" class="form-control" autocomplete="username" placeholder="you@example.com" />
+            <ValidationMessage For="() => Input.Email" class="text-danger" />
+        </div>
+        
+        <div class="mb-3">
+            <label class="form-label">Password</label>
+            <InputText type="password" @bind-Value="Input.Password" class="form-control" autocomplete="new-password" placeholder="&#x2022;&#x2022;&#x2022;&#x2022;&#x2022;&#x2022;&#x2022;&#x2022;" />
+            <ValidationMessage For="() => Input.Password" class="text-danger" />
+            <div class="form-text">Minimum 6 characters with uppercase, lowercase, and a digit.</div>
+        </div>
+        
+        <div class="mb-4">
+            <label class="form-label">Confirm Password</label>
+            <InputText type="password" @bind-Value="Input.ConfirmPassword" class="form-control" autocomplete="new-password" placeholder="&#x2022;&#x2022;&#x2022;&#x2022;&#x2022;&#x2022;&#x2022;&#x2022;" />
+            <ValidationMessage For="() => Input.ConfirmPassword" class="text-danger" />
+        </div>
+        
+        <button type="submit" class="btn btn-primary w-100 btn-lg mb-3">
+            Create Account
+        </button>
+        
+        <div class="auth-divider">
+            <span>or</span>
+        </div>
+        
+        <a href="/" class="btn btn-outline-secondary w-100">
+            &#x1F3E0; Back to Home
+        </a>
+    </EditForm>
+    
+    <div class="auth-links">
+        <span class="text-muted">Already have an account?</span>
+        <a href="@(NavigationManager.GetUriWithQueryParameters("Account/Login", new Dictionary<string, object?> { ["ReturnUrl"] = ReturnUrl }))">
+            Sign in instead
+        </a>
     </div>
 </div>
 

@@ -1,4 +1,5 @@
 ﻿@page "/Account/RegisterConfirmation"
+@layout AuthLayout
 
 @using System.Text
 @using Microsoft.AspNetCore.Identity
@@ -10,23 +11,38 @@
 @inject NavigationManager NavigationManager
 @inject IdentityRedirectManager RedirectManager
 
-<PageTitle>Register confirmation</PageTitle>
+<PageTitle>Registration Confirmation - CEMS</PageTitle>
 
-<h1>Register confirmation</h1>
+<div class="auth-card">
+    <div class="auth-card-header">
+        <div style="font-size: 4rem; margin-bottom: 1rem;">&#x2705;</div>
+        <h1>Almost There!</h1>
+        <p>Your account has been created successfully</p>
+    </div>
 
-<StatusMessage Message="@statusMessage" />
+    <StatusMessage Message="@statusMessage" />
 
-@if (emailConfirmationLink is not null)
-{
-    <p>
-        This app does not currently have a real email sender registered, see <a href="https://aka.ms/aspaccountconf">these docs</a> for how to configure a real email sender.
-        Normally this would be emailed: <a href="@emailConfirmationLink">Click here to confirm your account</a>
-    </p>
-}
-else
-{
-    <p role="alert">Please check your email to confirm your account.</p>
-}
+    @if (emailConfirmationLink is not null)
+    {
+        <div class="alert alert-info">
+            <p class="mb-2"><strong>Development Mode:</strong></p>
+            <p class="mb-0">Email sender is not configured. Click the link below to confirm your account:</p>
+        </div>
+        <a href="@emailConfirmationLink" class="btn btn-primary w-100 mb-3">
+            Confirm Your Account
+        </a>
+    }
+    else
+    {
+        <div class="alert alert-success">
+            <p class="mb-0">&#x1F4E7; Please check your email to confirm your account.</p>
+        </div>
+    }
+    
+    <div class="auth-links mt-4">
+        <a href="Account/Login">&#x2190; Back to Login</a>
+    </div>
+</div>
 
 @code {
     private string? emailConfirmationLink;
