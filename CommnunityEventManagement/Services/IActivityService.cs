@@ -10,5 +10,6 @@ namespace CommnunityEventManagement.Services
         Task<Activity> UpdateAsync(Activity activity);
         Task<bool> DeleteAsync(int id);
         Task<List<string>> GetCategoriesAsync();
+        Task<List<Activity>> GetByCategoryAsync(string category);
     }
 }

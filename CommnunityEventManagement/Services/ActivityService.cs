@@ -71,5 +71,13 @@ namespace CommnunityEventManagement.Services
                 .OrderBy(c => c)
                 .ToListAsync();
         }
+
+        public async Task<List<Activity>> GetByCategoryAsync(string category)
+        {
+            return await _context.Activities
+                .Where(a => a.Category == category)
+                .OrderBy(a => a.Name)
+                .ToListAsync();
+        }
     }
 }
